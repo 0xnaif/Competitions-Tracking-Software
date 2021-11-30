@@ -78,19 +78,23 @@ class Competition {
 	private String name;
 
 	public Competition(Date endDate, String link, String name) {
-		this.endDate = new Date();
+		this.endDate = endDate;
 		this.link = link;
 		this.name = name;
 	}
 	
 	public String getName() {
-
 		return name;
 	}
 }
 
 class CompetitionManger {
+	
 	private Competition competition;
+	
+	public CompetitionManger(Competition competition) {
+		this.competition = competition;
+	}
 
 	public void browseWebSite() {
 
@@ -121,7 +125,7 @@ class CompetitionTB extends Competition {
 		teams.add(team);
 	}
 
-	public ArrayList<Team> getTeam() {
+	public ArrayList<Team> getTeams() {
 		return teams;
 	}
 
@@ -170,7 +174,6 @@ class Team {
 	}
 	
 	public String getTeamName() {
-
 		return teamName;
 	}
 }
@@ -179,7 +182,7 @@ class Student {
 	private int id;
 	private String major;
 	private String name;
-	private String rank;
+	private int rank;
 
 	public Student(int id, String major, String name) {
 		this.id = id;
@@ -187,12 +190,11 @@ class Student {
 		this.name = name;
 	}
 
-	public void setRank(String rank) {
+	public void setRank(int rank) {
 		this.rank = rank;
 	}
 
 	public String getName() {
-		
 		return name;
 	}
 }
