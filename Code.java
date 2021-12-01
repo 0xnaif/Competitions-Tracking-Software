@@ -63,7 +63,7 @@ class UserInterface {
 		competitions = new ArrayList<Competition>();
 	}
 
-	public void addCompetition(CompetitionTB competition) {
+	public void addCompetition(Competition competition) {
 		competitions.add(competition);
 	}
 
