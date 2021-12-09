@@ -20,10 +20,12 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -213,6 +215,11 @@ public class competitionsTracker extends Application {
         column2.setCellValueFactory(new PropertyValueFactory<>("name"));
         TableColumn<Student, String> column3 = new TableColumn<>("Rank");
         column3.setCellValueFactory(new PropertyValueFactory<>("rank"));
+	column3.setCellFactory(TextFieldTableCell.forTableColumn());
+        column3.setOnEditCommit((CellEditEvent<Student, String> t) -> 
+            ((Student) t.getTableView().getItems().get(t.getTablePosition().getRow())).setRank(t.getNewValue()));	
+		
+		
         TableColumn<Student, String> column4 = new TableColumn<>("Major");
         column4.setCellValueFactory(new PropertyValueFactory<>("major"));
 
