@@ -42,9 +42,10 @@ import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
 
-// Before you run the competitionsTracker, you have to add JavaFx library and write two lines below this line on VM arguments. 
+// Before you run the competitionsTracker, you have to add JavaFx library and write three lines below this line on VM arguments. 
 //--module-path {your path of javafx-sdk} --add-modules javafx.controls
 //--add-modules=javafx.web
+//-Dcom.sun.webkit.useHTTP2Loader=false
 
 public class competitionsTracker extends Application {
 	
@@ -106,6 +107,7 @@ public class competitionsTracker extends Application {
 		back.setPrefSize(90, 20);
 		back.setOnAction(e -> arg0.setScene(scene));
 
+		arg0.setTitle("Competitions Tracker");
     	arg0.setScene(scene);
     	arg0.show();
 		
