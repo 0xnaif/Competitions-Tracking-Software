@@ -51,11 +51,9 @@ public class competitionsTracker extends Application {
 
 	private static ArrayList<Competition> competitions = new ArrayList<Competition>();
 	static TableView<Competition> tableViewC;
-	static Button backfromScene2 = new Button("back");
-	static Button backfromShowStudents = new Button("back");
-	static Button backfromShowTeams = new Button("back");
-	static Button backfromBrowse = new Button("back");
-	static Button TrackButton = new Button("Track a new competition");
+	static Button back = new Button("back");
+	
+	//static Button TrackButton = new Button("Track a new competition");
 
 	public static void main(String[] args) throws Exception {
 		
@@ -104,21 +102,9 @@ public class competitionsTracker extends Application {
 		// TODO Auto-generated method stub
 
 		Scene scene = showCompetitions();
-		Scene scene2=  TrackCompetition();
-		
-		backfromScene2.setPrefSize(90, 20);
-		backfromScene2.setOnAction(e ->arg0.setScene(scene));
-		
-		backfromShowStudents.setPrefSize(90, 20);
-		backfromShowStudents.setOnAction(e -> arg0.setScene(scene));
-		
-		backfromShowTeams.setPrefSize(90, 20);
-		backfromShowTeams.setOnAction(e -> arg0.setScene(scene));
-		
-		backfromBrowse.setPrefSize(90, 20);
-		backfromBrowse.setOnAction(e -> arg0.setScene(scene));
-		
-		TrackButton.setOnAction(e -> arg0.setScene(scene2));
+
+		back.setPrefSize(90, 20);
+		back.setOnAction(e -> arg0.setScene(scene));
 
     	arg0.setScene(scene);
     	arg0.show();
@@ -127,7 +113,7 @@ public class competitionsTracker extends Application {
 	
 	// Faris, add your comments.
 	// Write all competitions on excel file. Add all necessary methods (if there is any).
-	// Add another method that will read competitions from excel file.
+	// You can use start method to read competitions from excel file.
 	@Override
     public void stop() {
        // This method will be executed automatically after competitionsTracker shut down.
@@ -146,11 +132,15 @@ public class competitionsTracker extends Application {
         TableColumn<Competition, Date> column4 = new TableColumn<>("Link");
         column4.setCellValueFactory(new PropertyValueFactory<>("link"));
 		
+        column1.setPrefWidth(200);
+        column2.setPrefWidth(150);
+        column3.setPrefWidth(150);
+        column4.setPrefWidth(285);
+ 
+ 
         // Create Table View.
         tableViewC = new TableView<Competition>();
-    	tableViewC.setPrefSize(50, 500);
-    	
-    	// To add all columns to Table View to display it.
+
         tableViewC.getColumns().add(column1);
         tableViewC.getColumns().add(column2);
         tableViewC.getColumns().add(column3);
@@ -163,6 +153,7 @@ public class competitionsTracker extends Application {
 
         Button ShowPar = new Button("Show Participants");
         Button browseButton = new Button("Browse Website");
+        Button TrackButton = new Button("Track a new competition");
         
         // Set an action when any row has been Clicked.
         tableViewC.setOnMouseClicked((MouseEvent event) -> {
@@ -179,7 +170,7 @@ public class competitionsTracker extends Application {
         	browseButton.setOnAction(e -> browseWebsite(e,selectedCompetition));
 	        		
         });// End of  tableViewC.setOnMouseClicked.
-        
+        TrackButton.setOnAction(e -> TrackCompetition(e));
         // Create HBox, add buttons and set all necessary things.
         HBox hbox = new HBox();
         hbox.getChildren().addAll(ShowPar,browseButton,TrackButton);  
@@ -197,7 +188,7 @@ public class competitionsTracker extends Application {
         borderPane.setTop(label); 
 		borderPane.setCenter(tableViewC);
 		borderPane.setBottom(hbox);  
-		
+		BorderPane.setMargin(tableViewC, new Insets(0, 10, 0, 10));
 		// Create a scene and return it to display.
     	Scene scene = new Scene(borderPane,810, 450);
         return scene;
@@ -207,7 +198,6 @@ public class competitionsTracker extends Application {
 	// Done 
 	public void ShowSoloParticipants(ActionEvent event,Competition competition) {
 
-    
     	// To create all needed columns that will contain students information.
         TableColumn<Student, Integer> column1 = new TableColumn<>("ID");
         column1.setCellValueFactory(new PropertyValueFactory<>("id"));
@@ -215,14 +205,17 @@ public class competitionsTracker extends Application {
         column2.setCellValueFactory(new PropertyValueFactory<>("name"));
         TableColumn<Student, String> column3 = new TableColumn<>("Rank");
         column3.setCellValueFactory(new PropertyValueFactory<>("rank"));
-	column3.setCellFactory(TextFieldTableCell.forTableColumn());
+        column3.setCellFactory(TextFieldTableCell.forTableColumn());
         column3.setOnEditCommit((CellEditEvent<Student, String> t) -> 
-            ((Student) t.getTableView().getItems().get(t.getTablePosition().getRow())).setRank(t.getNewValue()));	
-		
-		
+            ((Student) t.getTableView().getItems().get(t.getTablePosition().getRow())).setRank(t.getNewValue()));
         TableColumn<Student, String> column4 = new TableColumn<>("Major");
         column4.setCellValueFactory(new PropertyValueFactory<>("major"));
 
+        column1.setPrefWidth(200);
+        column2.setPrefWidth(200);
+        column3.setPrefWidth(200);
+        column4.setPrefWidth(188);
+        
         // Create Table View, add all columns and set all necessary things.
         TableView<Student> tableView = new TableView<Student>();
     	tableView.setPrefSize(50, 500);
@@ -240,15 +233,15 @@ public class competitionsTracker extends Application {
 		// Create Text Field to get typed student information from the user, and set all necessary things.
 		TextField addName = new TextField();
 		addName.setPromptText("Name");
-		addName.setMaxWidth(column1.getPrefWidth());
+		addName.setMaxWidth(column1.getPrefWidth()-100);
         TextField addId = new TextField();
-        addId.setMaxWidth(column2.getPrefWidth());
+        addId.setMaxWidth(column2.getPrefWidth()-100);
         addId.setPromptText("ID");
         TextField setRank = new TextField();
-        setRank.setMaxWidth(column3.getPrefWidth());
+        setRank.setMaxWidth(column3.getPrefWidth()-100);
         setRank.setPromptText("Rank");
         TextField addMajor = new TextField();
-        addMajor.setMaxWidth(column4.getPrefWidth());
+        addMajor.setMaxWidth(column4.getPrefWidth()-100);
         addMajor.setPromptText("Major");
 		
         // Create Label to add names and all Text Fields.
@@ -280,7 +273,7 @@ public class competitionsTracker extends Application {
     	BorderPane BottomBorderPane = new BorderPane();
     	BottomBorderPane.setPadding(new Insets(10, 10, 10, 10));
     	BottomBorderPane.setCenter(hbox);
-    	BottomBorderPane.setLeft(backfromShowStudents);
+    	BottomBorderPane.setLeft(back);
     	BottomBorderPane.setRight(addButton);
 
     	// Button that will prepare email to a student.
@@ -296,11 +289,14 @@ public class competitionsTracker extends Application {
         topBorder.setLeft(label);
         topBorder.setRight(prepareEmail);
         
+        
         // Create primary borderPane and set all necessary things.
 		BorderPane borderPane = new BorderPane();
         borderPane.setBottom(BottomBorderPane);
 		borderPane.setCenter(tableView);
 		borderPane.setTop(topBorder);
+		BorderPane.setMargin(tableView, new Insets(0, 10, 0, 10));
+		
 		
 		// Set an action to "Add" Button, and do all necessary things to add the student to the competition.
         addButton.setOnAction(new EventHandler<ActionEvent>() {
@@ -359,22 +355,25 @@ public class competitionsTracker extends Application {
 	}// End of ShowSoloParticipants Method.
 
 	// Done, add comments.
-	public Scene TrackCompetition() {
+	public void TrackCompetition(ActionEvent event) {
 		
 		TextField competitionName = new TextField();
 		TextField competitionLink = new TextField();
-		DatePicker datePicker = new DatePicker();
-		competitionName.setPrefSize(500, 15);
-		
+		DatePicker datePicker = new DatePicker();	
 		ComboBox<String> CompetitionType = new ComboBox<>();
+		
 		CompetitionType.setPrefSize(100, 20);
+		competitionLink.setPrefSize(300, 15);
+		competitionName.setPrefSize(300, 15);
 		CompetitionType.getItems().addAll("Solo", "Team Basd");
 		CompetitionType.setValue(""); 
-
+		
+		Label label = new Label("Track a new competition");
+        label.setFont(new Font("Arial", 20));
 		Label competitionNameLable = new Label("Competition name:", competitionName);
-		Label competitionLinkLable = new Label("Competition link:", competitionLink);
-		Label typeLable = new Label("Competition type: ", CompetitionType);
-		Label dateLable = new Label("Competition date: ", datePicker);
+		Label competitionLinkLable = new Label("Competition link:   ", competitionLink);
+		Label typeLable = new Label("Competition type:  ", CompetitionType);
+		Label dateLable = new Label("Competition date:  ", datePicker);
 		
 		typeLable.setContentDisplay(ContentDisplay.RIGHT);
 		typeLable.setPadding(new Insets(10, 10, 10, 10));
@@ -390,7 +389,7 @@ public class competitionsTracker extends Application {
 		
 
 		VBox Vbox = new VBox(15);
-		Vbox.getChildren().addAll(competitionNameLable, competitionLinkLable, typeLable, dateLable);
+		Vbox.getChildren().addAll(label,competitionNameLable, competitionLinkLable, typeLable, dateLable);
 		Vbox.setPadding(new Insets(20, 10, 10, 20));
 
 		Button Track = new Button("Track");
@@ -399,7 +398,7 @@ public class competitionsTracker extends Application {
 		BorderPane borderPane1 = new BorderPane();
 		borderPane1.setPadding(new Insets(0, 20, 20, 20));
 
-		borderPane1.setLeft(backfromScene2);
+		borderPane1.setLeft(back);
 		borderPane1.setRight(Track);
 		
 
@@ -450,8 +449,11 @@ public class competitionsTracker extends Application {
 		      } 	
         }});
 
-		Scene scene = new Scene(borderPane,700, 300);
-    return scene;
+		Scene scene = new Scene(borderPane,700, 350);
+		Node node = (Node) event.getSource();
+	    Stage thisStage = (Stage) node.getScene().getWindow();
+	    thisStage.setScene(scene);
+	    thisStage.show();
     
 	}// End of TrackCompetition Method.
 	
@@ -463,7 +465,7 @@ public class competitionsTracker extends Application {
 		Text text = new Text("The competition has been added successfully");
 		text.setFont(Font.font(text.getText(), FontWeight.BOLD, FontPosture.REGULAR, 20));
 
-		borderPane.setBottom(backfromScene2);
+		borderPane.setBottom(back);
 		borderPane.setPadding(new Insets(10, 10, 10, 10));
 		borderPane.setCenter(text);
 		
@@ -488,7 +490,7 @@ public class competitionsTracker extends Application {
 			BorderPane borderPane = new BorderPane();
 			BorderPane borderPane1 = new BorderPane();
 			borderPane1.setPadding(new Insets(10, 10, 10, 10));
-			borderPane1.setLeft(backfromBrowse);
+			borderPane1.setLeft(back);
 			borderPane.setCenter(Webview);
 			borderPane.setBottom(borderPane1);
 			
@@ -509,7 +511,7 @@ public class competitionsTracker extends Application {
 	//Meshal
 	// Add your comments.
 	public void showTeams(ActionEvent event,Competition competition) {
-		// note : add this Button (backfromShowTeams). It is static Button.
+		// note : add this Button (back). It is static Button.
 		// Look at start method I used (backfromShowTeams.setOnAction).
 		
 		if(competition != null) {
