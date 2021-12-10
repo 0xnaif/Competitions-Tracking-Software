@@ -214,7 +214,7 @@ public class competitionsTracker extends Application {
         column1.setPrefWidth(200);
         column2.setPrefWidth(200);
         column3.setPrefWidth(200);
-        column4.setPrefWidth(188);
+        column4.setPrefWidth(187);
         
         // Create Table View, add all columns and set all necessary things.
         TableView<Student> tableView = new TableView<Student>();
