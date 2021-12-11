@@ -2,8 +2,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import javafx.application.Application;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -17,26 +15,20 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.RadioButton;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellEditEvent;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
@@ -60,9 +52,9 @@ public class competitionsTracker extends Application {
 		
 		// Just for test the code:
 		CompetitionTB competition = new CompetitionTB("https://ultrahack.org/aiot-hackathon-stc","AIoT Hackathon with stc");
-		competition.setDate(2021, 12, 20);
-		CompetitionSolo competition2 = new CompetitionSolo("https://twitter.com/CyberhubSa","CyberuHub");
-		competition2.setDate(2021, 12, 22);
+		competition.setDate(2021, 12, 10);
+		CompetitionSolo competition2 = new CompetitionSolo("https://cyberhub.sa","CyberuHub");
+		competition2.setDate(2021, 12, 10);
 		Team team = new Team("SuperDevops", 1);
 		Team team2 = new Team("StackUnderflow", 2);
 		team.addStudent(new Student(222243860, "CS", "Bassel Alqahtani"));
@@ -97,11 +89,14 @@ public class competitionsTracker extends Application {
 	//JavaFx
 //-------------------------------------------------------------------------------------------
 	
+	
+	
+	
 	// Done, add comments.
 	@Override
 	public void start(Stage arg0) throws Exception {
 		// TODO Auto-generated method stub
-
+		 
 		Scene scene = showCompetitions();
 
 		back.setPrefSize(90, 20);
@@ -110,6 +105,8 @@ public class competitionsTracker extends Application {
 		arg0.setTitle("Competitions Tracker");
     	arg0.setScene(scene);
     	arg0.show();
+    	showNotification();
+    	
 		
 	}
 	
@@ -125,19 +122,26 @@ public class competitionsTracker extends Application {
 	public Scene showCompetitions() {		
     	
         // To create all needed columns that will contain competitions information.
-    	TableColumn<Competition, Date> column1 = new TableColumn<>("Name");
+    	TableColumn<Competition, String> column1 = new TableColumn<>("Name");
         column1.setCellValueFactory(new PropertyValueFactory<>("name"));
-        TableColumn<Competition, Date> column2 = new TableColumn<>("Date");
+        
+        TableColumn<Competition, LocalDate> column2 = new TableColumn<>("Date");
         column2.setCellValueFactory(new PropertyValueFactory<>("date"));
+        
         TableColumn<Competition, String> column3 = new TableColumn<>("Type");
         column3.setCellValueFactory(new PropertyValueFactory<>("type"));
-        TableColumn<Competition, Date> column4 = new TableColumn<>("Link");
-        column4.setCellValueFactory(new PropertyValueFactory<>("link"));
+        
+        TableColumn<Competition, String> column4 = new TableColumn<>("Status");
+        column4.setCellValueFactory(new PropertyValueFactory<>("status"));
+        
+        TableColumn<Competition, String> column5 = new TableColumn<>("Link");
+        column5.setCellValueFactory(new PropertyValueFactory<>("link"));
 		
-        column1.setPrefWidth(200);
+        column1.setPrefWidth(150);
         column2.setPrefWidth(150);
-        column3.setPrefWidth(150);
-        column4.setPrefWidth(285);
+        column3.setPrefWidth(100);
+        column4.setPrefWidth(100);
+        column5.setPrefWidth(288);
  
  
         // Create Table View.
@@ -147,6 +151,7 @@ public class competitionsTracker extends Application {
         tableViewC.getColumns().add(column2);
         tableViewC.getColumns().add(column3);
         tableViewC.getColumns().add(column4);
+        tableViewC.getColumns().add(column5);
      
         // To add all competitions to the Table View.
         for(Competition competition : competitions)
@@ -169,7 +174,7 @@ public class competitionsTracker extends Application {
         	else if(selectedCompetition instanceof CompetitionTB)
         		ShowPar.setOnAction(e -> showTeams(e,selectedCompetition));
         	
-        	browseButton.setOnAction(e -> browseWebsite(e,selectedCompetition));
+        	browseButton.setOnAction(e -> browseWebsite(selectedCompetition));
 	        		
         });// End of  tableViewC.setOnMouseClicked.
         TrackButton.setOnAction(e -> TrackCompetition(e));
@@ -210,6 +215,8 @@ public class competitionsTracker extends Application {
         column3.setCellFactory(TextFieldTableCell.forTableColumn());
         column3.setOnEditCommit((CellEditEvent<Student, String> t) -> 
             ((Student) t.getTableView().getItems().get(t.getTablePosition().getRow())).setRank(t.getNewValue()));
+        column3.setEditable(true);
+        
         TableColumn<Student, String> column4 = new TableColumn<>("Major");
         column4.setCellValueFactory(new PropertyValueFactory<>("major"));
 
@@ -225,6 +232,7 @@ public class competitionsTracker extends Application {
         tableView.getColumns().add(column2);
         tableView.getColumns().add(column4);
         tableView.getColumns().add(column3);
+        tableView.setEditable(true);
         
 
         // To add all students to the Table View.
@@ -356,6 +364,7 @@ public class competitionsTracker extends Application {
 
 	}// End of ShowSoloParticipants Method.
 
+
 	// Done, add comments.
 	public void TrackCompetition(ActionEvent event) {
 		
@@ -406,6 +415,8 @@ public class competitionsTracker extends Application {
 
 		BorderPane borderPane = new BorderPane();
 		borderPane.setCenter(Vbox);
+		
+		BorderPane.setMargin(Vbox, new Insets(0, 10, 0, 10));
 		borderPane.setBottom(borderPane1);
 		
 		Track.setOnAction(new EventHandler<ActionEvent>() {
@@ -481,26 +492,19 @@ public class competitionsTracker extends Application {
 	
 	//Abdulaziz
 	//Done, add comments.
-	public void browseWebsite(ActionEvent event,Competition competition) {
+	public void browseWebsite(Competition competition) {
 
 		if(competition != null) {
 			
 			WebView Webview = new WebView();
             WebEngine webEngine = Webview.getEngine();
             webEngine.load(competition.getLink());
-			
-			BorderPane borderPane = new BorderPane();
-			BorderPane borderPane1 = new BorderPane();
-			borderPane1.setPadding(new Insets(10, 10, 10, 10));
-			borderPane1.setLeft(back);
-			borderPane.setCenter(Webview);
-			borderPane.setBottom(borderPane1);
-			
-		   	Scene scene = new Scene(borderPane,Webview.getPrefWidth(), Webview.getPrefHeight());
-			Node node = (Node) event.getSource();
-		    Stage thisStage = (Stage) node.getScene().getWindow();
-		    thisStage.setScene(scene);
-		    thisStage.show();
+
+		   	Scene scene = new Scene(Webview,Webview.getPrefWidth(), Webview.getPrefHeight());
+		   	Stage stage = new Stage();
+		   	stage.setTitle("KFUPM News Team Browser");
+		    stage.setScene(scene);
+		    stage.show();
         }
 		else {
 			Alert errorAlert = new Alert(AlertType.ERROR);
@@ -554,6 +558,25 @@ public class competitionsTracker extends Application {
 	    
 	}// End of showTeamMembers Method.
 	
+	public void showNotification() {
+		String ContentText = "";
+		CompetitionManger competitionManger;
+		for(int i = 0 ; i< competitions.size();++i) {
+			
+			competitionManger = new CompetitionManger(competitions.get(i));
+			if(competitions.get(i).getStatus().equals("Off") && !competitionManger.isUpdated())
+				ContentText += "\n"+competitions.get(i).getName();
+		
+		}
+		if(!ContentText.isEmpty()) {
+			Alert alertWarning = new Alert(AlertType.WARNING);
+	        alertWarning.setTitle("Warning Alert");
+	        alertWarning.setHeaderText("Update The Winners");
+	        alertWarning.setContentText("Update these competitions:"+ ContentText);
+	        alertWarning.showAndWait();
+		}
+		
+	}
 	
 	
 //-------------------------------------------------------------------------------------------	
