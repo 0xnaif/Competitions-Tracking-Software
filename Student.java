@@ -8,7 +8,7 @@ public class Student{
 
 	public Student(int id, String major, String name) {
 
-		this.rank = "Unknown";
+		this.rank = "-";
 		this.id = id;
 		this.major = major;
 		this.name = name;
