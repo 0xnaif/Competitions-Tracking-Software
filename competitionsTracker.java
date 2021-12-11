@@ -1,6 +1,5 @@
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -349,8 +348,16 @@ public class competitionsTracker extends Application {
         	//Set an action to prepareEmail.
         	prepareEmail.setOnAction(e -> {
         	CompetitionManger Manger = new CompetitionManger(competition);	        	
-        	try {Manger.prepareEmail(selectedStudent);} 
-        	catch (Exception e1) {e1.printStackTrace();}
+        	try {
+				if(selectedStudent != null)
+					Manger.prepareEmail(selectedStudent);
+				else
+					throw new Exception();
+			} catch (Exception e1) {
+				Alert errorAlert = new Alert(AlertType.ERROR);
+				errorAlert.setHeaderText("Error");
+				errorAlert.setContentText("Select a student!");
+				errorAlert.showAndWait();}
         	});// End of prepareEmail.setOnAction  
         	
         }); // End of tableView.setOnMouseClicked  
@@ -598,6 +605,7 @@ public class competitionsTracker extends Application {
 			showMembers.setFont(new Font("Arial", 10));
 			prepareEmail.setFont(new Font("Arial", 10));
 			showMembers.setPrefSize(90, 20);
+			prepareEmail.setPrefSize(90, 20);
 
 			Label label = new Label("Teams");
 			label.setFont(new Font("Arial", 20));
@@ -634,7 +642,6 @@ public class competitionsTracker extends Application {
 							team.setRank(setRank.getText());
 							((CompetitionTB) competition).addTeam(team);
 							addId.clear();
-
 							addName.clear();
 							setRank.clear();
 							tableView.getItems().add(((CompetitionTB) competition).getTeams()
@@ -662,9 +669,15 @@ public class competitionsTracker extends Application {
 				prepareEmail.setOnAction(e -> {
 					CompetitionManger Manger = new CompetitionManger(competition);
 					try {
-						Manger.prepareEmail(selectedTeam);
+						if(selectedTeam != null)
+							Manger.prepareEmail(selectedTeam);
+						else
+							throw new Exception();
 					} catch (Exception e1) {
-						e1.printStackTrace();
+						Alert errorAlert = new Alert(AlertType.ERROR);
+						errorAlert.setHeaderText("Error");
+						errorAlert.setContentText("Select a team!");
+						errorAlert.showAndWait();
 					}
 				});// End of prepareEmail.setOnAction
 
