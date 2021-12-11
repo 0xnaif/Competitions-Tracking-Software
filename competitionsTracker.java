@@ -516,23 +516,170 @@ public class competitionsTracker extends Application {
 	
 	//Meshal
 	// Add your comments.
-	public void showTeams(ActionEvent event,Competition competition) {
+	public void showTeams(ActionEvent event, Competition competition) {
 		// note : add this Button (back). It is static Button.
 		// Look at start method I used (back.setOnAction).
-		
-		if(competition != null) {
-			// To be completed
-		
-		
+
+		if (competition != null) {
+			TableColumn<Team, Integer> column1 = new TableColumn<>("Team Number");
+			column1.setCellValueFactory(new PropertyValueFactory<>("teamNumber"));
+			TableColumn<Team, String> column2 = new TableColumn<>("Team Name");
+			column2.setCellValueFactory(new PropertyValueFactory<>("teamName"));
+			TableColumn<Team, String> column3 = new TableColumn<>("Rank");
+			column3.setCellValueFactory(new PropertyValueFactory<>("rank"));
+			column3.setCellFactory(TextFieldTableCell.forTableColumn());
+			column3.setOnEditCommit((CellEditEvent<Team, String> t) -> ((Team) t.getTableView().getItems()
+					.get(t.getTablePosition().getRow())).setRank(t.getNewValue()));
+			column3.setEditable(true);
+
+			column1.setPrefWidth(200);
+			column2.setPrefWidth(200);
+			column3.setPrefWidth(200);
+
+			// Create Table View, add all columns and set all necessary things.
+			TableView<Team> tableView = new TableView<Team>();
+			tableView.setPrefSize(50, 500);
+			tableView.getColumns().add(column1);
+			tableView.getColumns().add(column2);
+			tableView.getColumns().add(column3);
+			tableView.setEditable(true);
+
+			// To add all students to the Table View.
+			ArrayList<Team> teams = ((CompetitionTB) competition).getTeams();
+			for (int i = 0; i < teams.size(); ++i)
+				tableView.getItems().add(teams.get(i));
+
+			// Create Text Field to get typed student information from the user, and set all
+			// necessary things.
+			TextField addName = new TextField();
+			addName.setPromptText("Name");
+			addName.setMaxWidth(column1.getPrefWidth() - 100);
+			TextField addId = new TextField();
+			addId.setMaxWidth(column2.getPrefWidth() - 100);
+			addId.setPromptText("ID");
+			TextField setRank = new TextField();
+			setRank.setMaxWidth(column3.getPrefWidth() - 100);
+			setRank.setPromptText("Rank");
+
+			// Create Label to add names and all Text Fields.
+			Label IDView = new Label("ID : ", addId);
+			Label NameView = new Label("Name : ", addName);
+			Label RankView = new Label("Rank : ", setRank);
+
+			// Set all necessary things.
+			IDView.setContentDisplay(ContentDisplay.RIGHT);
+			NameView.setContentDisplay(ContentDisplay.RIGHT);
+
+			RankView.setContentDisplay(ContentDisplay.RIGHT);
+			IDView.setPadding(new Insets(5, 5, 5, 5));
+			NameView.setPadding(new Insets(5, 5, 5, 5));
+
+			RankView.setPadding(new Insets(5, 5, 5, 5));
+
+			// Button that will add the student.
+			Button addButton = new Button("Add");
+			addButton.setPrefSize(90, 20);
+
+			// Create HBox, add buttons and set all necessary things.
+			HBox hbox = new HBox();
+			hbox.getChildren().addAll(IDView, NameView, RankView);
+			hbox.setAlignment(Pos.CENTER);
+
+			// Create BottomBorderPane and set all necessary things.
+			BorderPane BottomBorderPane = new BorderPane();
+			BottomBorderPane.setPadding(new Insets(10, 10, 10, 10));
+			BottomBorderPane.setCenter(hbox);
+			BottomBorderPane.setLeft(back);
+			BottomBorderPane.setRight(addButton);
+
+			// Button that will prepare email to a student.
+			Button showMembers = new Button("Show Members");
+			Button prepareEmail = new Button("Prepare Email");
+			showMembers.setFont(new Font("Arial", 10));
+			prepareEmail.setFont(new Font("Arial", 10));
+			showMembers.setPrefSize(90, 20);
+
+			Label label = new Label("Teams");
+			label.setFont(new Font("Arial", 20));
+			
+			HBox hb = new HBox();
+			hb.setSpacing(5);
+			hb.getChildren().addAll(showMembers, prepareEmail);
+			// Create topBorder and set all necessary things.
+			BorderPane topBorder = new BorderPane();
+			
+			topBorder.setPadding(new Insets(10, 10, 10, 10));
+			topBorder.setLeft(label);
+			topBorder.setRight(hb);
+
+			// Create primary borderPane and set all necessary things.
 			BorderPane borderPane = new BorderPane();
-			// Add to (borderPane)
-				
-		   	Scene scene = new Scene(borderPane,810, 450);
+			borderPane.setBottom(BottomBorderPane);
+			borderPane.setCenter(tableView);
+			borderPane.setTop(topBorder);
+			BorderPane.setMargin(tableView, new Insets(0, 10, 0, 10));
+
+			// Set an action to "Add" Button, and do all necessary things to add the student
+			// to the competition.
+			addButton.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent e) {
+
+					Alert errorAlert = new Alert(AlertType.ERROR);
+					errorAlert.setHeaderText("Invalid input");
+
+					if (!addId.getText().isBlank() && !addName.getText().isBlank() && !setRank.getText().isBlank()) {
+						try {
+							Team team = new Team(addName.getText(), Integer.parseInt(addId.getText()));
+							team.setRank(setRank.getText());
+							((CompetitionTB) competition).addTeam(team);
+							addId.clear();
+
+							addName.clear();
+							setRank.clear();
+							tableView.getItems().add(((CompetitionTB) competition).getTeams()
+									.get(((CompetitionTB) competition).getTeams().size() - 1));
+						} catch (NumberFormatException er) {
+							// To raise error if anything went wrong.
+							errorAlert.setContentText("ID should be numbers");
+							errorAlert.showAndWait();
+						}
+					} else {
+						// To raise error if anything went wrong.
+						errorAlert.setContentText("Fill all information!");
+						errorAlert.showAndWait();
+					}
+				}
+			}); // End of addButton.setOnAction.
+			
+
+			// Set an action when any row has been Clicked.
+			tableView.setOnMouseClicked((MouseEvent ev) -> {
+				// To get the selectedStudent from table View.
+				Team selectedTeam = tableView.getSelectionModel().getSelectedItem();
+
+				// Set an action to prepareEmail.
+				prepareEmail.setOnAction(e -> {
+					CompetitionManger Manger = new CompetitionManger(competition);
+					try {
+						Manger.prepareEmail(selectedTeam);
+					} catch (Exception e1) {
+						e1.printStackTrace();
+					}
+				});// End of prepareEmail.setOnAction
+
+			}); // End of tableView.setOnMouseClicked
+			
+			
+
+			// Create a scene and set it on thisStage to display.
+			Scene scene = new Scene(borderPane, 810, 450);
 			Node node = (Node) event.getSource();
-		    Stage thisStage = (Stage) node.getScene().getWindow();
-		    thisStage.setScene(scene);
-		    thisStage.show();
-        }
+			Stage thisStage = (Stage) node.getScene().getWindow();
+			thisStage.setScene(scene);
+			thisStage.show();
+		}
+
 	}// End of showTeams Method.
 	
 	// Naif
