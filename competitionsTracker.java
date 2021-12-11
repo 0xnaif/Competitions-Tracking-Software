@@ -518,7 +518,7 @@ public class competitionsTracker extends Application {
 	// Add your comments.
 	public void showTeams(ActionEvent event,Competition competition) {
 		// note : add this Button (back). It is static Button.
-		// Look at start method I used (backfromShowTeams.setOnAction).
+		// Look at start method I used (back.setOnAction).
 		
 		if(competition != null) {
 			// To be completed
