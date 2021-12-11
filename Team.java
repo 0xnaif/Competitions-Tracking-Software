@@ -3,10 +3,11 @@ import java.util.ArrayList;
 public class Team {
 	private String teamName;
 	private int teamNumber;
-	private int rank;
+	private String rank;
 	ArrayList<Student> members;
 
 	public Team(String teamName, int teamNumber) {
+		rank = "-";
 		this.teamName = teamName;
 		this.teamNumber = teamNumber;
 		members = new ArrayList<Student>();
@@ -16,7 +17,7 @@ public class Team {
 		members.add(student);
 	}
 
-	public void setRank(int rank) {
+	public void setRank(String rank) {
 		this.rank = rank;
 	}
 
@@ -32,7 +33,7 @@ public class Team {
 
 		return teamNumber;
 	}
-	public int getRank() {
+	public String getRank() {
 
 		return rank;
 	}
