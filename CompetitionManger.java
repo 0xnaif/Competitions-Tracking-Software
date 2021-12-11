@@ -9,9 +9,6 @@ public class CompetitionManger {
 		this.competition = competition;
 		
 	}
-	public static void browseWebSite() {
-
-	}
 
 	public void prepareEmail(Team team) throws Exception {
 	
@@ -54,34 +51,28 @@ public class CompetitionManger {
 		    message = message.replace("[Student name/Team name]", student.getName());
 		    message = message.replace("[Competition name]", competition.getName());
 		    prepareEmail.SendEmail(receiver,subject,message);
-		    
-		    
-		    
+		        
     	}
     	
     }
-
-
-	public void showNotification() {
+	public boolean isUpdated() {
 		
-	}
-	public ArrayList<String> ReturnParticipants() {
-		
-		ArrayList<String> allInfo = new ArrayList<String>();
 		if(competition instanceof CompetitionSolo) {
-    		
-			ArrayList<Student> x = ((CompetitionSolo) competition).getIndividuals();
-			
-			for(int i = 0 ; i< x.size(); ++i) 
-				allInfo.add(x.get(i).toString());
-
+			ArrayList<Student> students = ((CompetitionSolo) competition).getIndividuals();
+			for(Student student : students) 
+				if(student.getRank().equals("-"))
+					return false;	
 		}
+		if(competition instanceof CompetitionTB) {
+			ArrayList<Team> teams = ((CompetitionTB) competition).getTeams();
+			for(Team team : teams) 
+				if(team.getRank().equals("-"))
+					return false;
+		}
+
+		return true;
 		
-		
-		
-		
-		
-		return allInfo;
 		
 	}
+	
 }
