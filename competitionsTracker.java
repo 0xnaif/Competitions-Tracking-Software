@@ -681,7 +681,17 @@ public class competitionsTracker extends Application {
 					}
 				});// End of prepareEmail.setOnAction
 				showMembers.setOnAction(e -> {
-					showTeamMembers(e, competition, selectedTeam);
+					try {
+						if(selectedTeam != null)
+							showTeamMembers(e, competition, selectedTeam);
+						else
+							throw new Exception();
+					} catch (Exception e1) {
+						Alert errorAlert = new Alert(AlertType.ERROR);
+						errorAlert.setHeaderText("Error");
+						errorAlert.setContentText("Select a team!");
+						errorAlert.showAndWait();
+					}
 				});
 				
 			}); // End of tableView.setOnMouseClicked
