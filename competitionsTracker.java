@@ -680,7 +680,10 @@ public class competitionsTracker extends Application {
 						errorAlert.showAndWait();
 					}
 				});// End of prepareEmail.setOnAction
-
+				showMembers.setOnAction(e -> {
+					showTeamMembers(e, competition, selectedTeam);
+				});
+				
 			}); // End of tableView.setOnMouseClicked
 			
 			
@@ -699,22 +702,139 @@ public class competitionsTracker extends Application {
 	// Add your comments.
 	public void showTeamMembers(ActionEvent event,Competition competition, Team team) {
 		
-		// To be completed
-		
-		
-		// Add this Button to the screen.
+		TableColumn<Student, Integer> column1 = new TableColumn<>("ID");
+		column1.setCellValueFactory(new PropertyValueFactory<>("id"));
+		TableColumn<Student, String> column2 = new TableColumn<>("Name");
+		column2.setCellValueFactory(new PropertyValueFactory<>("name"));
+		TableColumn<Student, String> column3 = new TableColumn<>("Major");
+		column3.setCellValueFactory(new PropertyValueFactory<>("major"));
+
+		// setting width of columns
+		column1.setPrefWidth(200);
+		column2.setPrefWidth(200);
+		column3.setPrefWidth(187);
+
+		// Table View contains all created columns
+		TableView<Student> tableView = new TableView<Student>();
+		tableView.setPrefSize(50, 500);
+		tableView.getColumns().add(column1);
+		tableView.getColumns().add(column2);
+		tableView.getColumns().add(column3);
+		tableView.setEditable(true);
+
+		// ArrayList contains all members which will be added them to table view
+		ArrayList<Student> members = team.getMembers();
+
+		for (int i = 0; i < members.size(); ++i)
+			tableView.getItems().add(members.get(i));
+
+		// Text Fields for adding a new member
+		TextField addName = new TextField();
+		addName.setPromptText("Name");
+		addName.setMaxWidth(column1.getPrefWidth() - 100);
+		TextField addId = new TextField();
+		addId.setMaxWidth(column2.getPrefWidth() - 100);
+		addId.setPromptText("ID");
+		TextField addMajor = new TextField();
+		addMajor.setMaxWidth(column3.getPrefWidth() - 100);
+		addMajor.setPromptText("Major");
+
+		// Labels of adding member text fields
+		Label IDView = new Label("ID : ", addId);
+		Label NameView = new Label("Name : ", addName);
+		Label MajorView = new Label("Major : ", addMajor);
+
+		IDView.setContentDisplay(ContentDisplay.RIGHT);
+		NameView.setContentDisplay(ContentDisplay.RIGHT);
+
+		MajorView.setContentDisplay(ContentDisplay.RIGHT);
+		IDView.setPadding(new Insets(5, 5, 5, 5));
+		NameView.setPadding(new Insets(5, 5, 5, 5));
+		MajorView.setPadding(new Insets(5, 5, 5, 5));
+
+		// Button for adding a new member
+		Button addButton = new Button("Add");
+		addButton.setPrefSize(90, 20);
+
+		// handling actions on adding button
+		addButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				// setting Alert class for raised errors
+				Alert errorAlert = new Alert(AlertType.ERROR);
+				errorAlert.setHeaderText("Invalid input");
+
+				// if text fields are not empty
+				if (!addId.getText().isBlank() && !addName.getText().isBlank() && !addMajor.getText().isBlank()) {
+					// if name is a string
+					if (addName.getText().matches("[a-zA-Z]+")) {
+						try {
+							Student student = new Student(Integer.parseInt(addId.getText()), addMajor.getText(),
+									addName.getText());
+							team.addStudent(student);
+							tableView.getItems().add(team.getMembers().get(team.getMembers().size() - 1));
+						} catch (NumberFormatException er) {
+							// To raise error if anything went wrong or id is not a number.
+							errorAlert.setContentText("ID should be numbers");
+							errorAlert.showAndWait();
+						}
+					}
+					// if name is not a string
+					else {
+						errorAlert.setContentText("Name should be string");
+						errorAlert.showAndWait();
+					}
+				}
+				// if text fields are empty
+				else {
+					errorAlert.setContentText("Fill all information!");
+					errorAlert.showAndWait();
+				}
+				addId.clear();
+				addName.clear();
+				addMajor.clear();
+			}
+		});
+
+		// HBox contains labels of adding member text fields
+		HBox hbox = new HBox();
+		hbox.getChildren().addAll(IDView, NameView, MajorView);
+		hbox.setAlignment(Pos.CENTER);
+
+		// back button to go back the previous page
 		Button back = new Button("back");
 		back.setPrefSize(90, 20);
-		back.setOnAction(e -> showTeams(e,competition));
-		
+		back.setOnAction(e -> showTeams(e, competition));
+
+		// BorderPane contains HBox and back and add buttons
+		BorderPane BottomBorderPane = new BorderPane();
+		BottomBorderPane.setPadding(new Insets(10, 10, 10, 10));
+		BottomBorderPane.setCenter(hbox);
+		BottomBorderPane.setLeft(back);
+		BottomBorderPane.setRight(addButton);
+
+		// Page title
+		Label label = new Label("Members");
+		label.setFont(new Font("Arial", 20));
+
+		// BorderPane contains page title
+		BorderPane topBorder = new BorderPane();
+		topBorder.setPadding(new Insets(10, 10, 10, 10));
+		topBorder.setLeft(label);
+
+		// BorderPane contains table view and other BorderPanes
 		BorderPane borderPane = new BorderPane();
-		// Add to (borderPane).
-		
-		Scene scene = new Scene(borderPane,810, 450);
+		borderPane.setBottom(BottomBorderPane);
+		borderPane.setCenter(tableView);
+		borderPane.setTop(topBorder);
+		BorderPane.setMargin(tableView, new Insets(0, 10, 0, 10));
+
+		// setting scene
+		Scene scene = new Scene(borderPane, 810, 450);
 		Node node = (Node) event.getSource();
-	    Stage thisStage = (Stage) node.getScene().getWindow();
-	    thisStage.setScene(scene);
-	    thisStage.show();
+		Stage thisStage = (Stage) node.getScene().getWindow();
+		thisStage.setScene(scene);
+		thisStage.show();
 	    
 	}// End of showTeamMembers Method.
 	
