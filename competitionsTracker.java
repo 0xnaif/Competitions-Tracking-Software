@@ -306,7 +306,6 @@ public class competitionsTracker extends Application {
 		borderPane.setTop(topBorder);
 		BorderPane.setMargin(tableView, new Insets(0, 10, 0, 10));
 		
-		
 		// Set an action to "Add" Button, and do all necessary things to add the student to the competition.
         addButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -314,30 +313,48 @@ public class competitionsTracker extends Application {
             	
             	Alert errorAlert = new Alert(AlertType.ERROR);
 		      	errorAlert.setHeaderText("Invalid input");
-		      	
+		      	String ContentText = "";
             	if(!addId.getText().isBlank() && !addMajor.getText().isBlank() && !addName.getText().isBlank() && !setRank.getText().isBlank()) {
-            		try {	
+            		
+            		if(addName.getText().matches("[a-zA-Z]+")  && addMajor.getText().matches("[a-zA-Z]+") && addId.getText().matches(".*[0-9].*")  && (setRank.getText().matches(".*[0-9].*") || setRank.getText().equals("-"))) 
+            		{
 	            		Student student =new Student(Integer.parseInt(addId.getText()),addMajor.getText(),addName.getText());
 	            		student.setRank(setRank.getText());
-	            		((CompetitionSolo) competition).addStudent(student);
-	            		addId.clear();
-	            		addMajor.clear();
-	            		addName.clear();
-	            		setRank.clear();	         
+	            		((CompetitionSolo) competition).addStudent(student);	         
 	            		tableView.getItems().add(((CompetitionSolo) competition).getIndividuals().get(((CompetitionSolo) competition).getIndividuals().size()-1));
-            		 	}
-        		    catch(NumberFormatException er) {
-        		    	// To raise error if anything went wrong.
-        		    	errorAlert.setContentText("ID should be numbers");
-        		    	errorAlert.showAndWait();
-        		    	}
-            		}	
+            		}
+            		// if name is not a string or rank is a string
+					else {
+						if(!addId.getText().matches(".*[0-9].*"))
+	        		    	ContentText = ContentText + "\nID should be numbers.";
+						
+						if(!addName.getText().matches("[a-zA-Z]+"))
+							ContentText = ContentText + "\nName should be string.";
+						
+						if(!addMajor.getText().matches("[a-zA-Z]+"))
+							ContentText = ContentText + "\nMajor should be string.";
+							
+						
+						if(!setRank.getText().matches(".*[0-9].*") || !setRank.getText().equals("-"))
+							ContentText = ContentText + "\nRank should be numbers \nor (-) if the competition is not over due.";	
+					}		
+    			}	
             	else {
             		// To raise error if anything went wrong.
             		errorAlert.setContentText("Fill all information!");
             		errorAlert.showAndWait();
             		}	
-            	}
+
+            	if(!ContentText.isEmpty()) {
+            		errorAlert.setContentText(ContentText);
+					errorAlert.showAndWait();}
+            	
+            	addId.clear();
+        		addMajor.clear();
+        		addName.clear();
+        		setRank.clear();
+            }
+            
     		}); // End of addButton.setOnAction.
        
         // Set an action when any row has been Clicked.
@@ -372,7 +389,6 @@ public class competitionsTracker extends Application {
 	}// End of ShowSoloParticipants Method.
 
 
-	// Done, add comments.
 	public void TrackCompetition(ActionEvent event) {
 		
 		TextField competitionName = new TextField();
@@ -477,8 +493,6 @@ public class competitionsTracker extends Application {
     
 	}// End of TrackCompetition Method.
 	
-
-	// Done, add comments.
 	public void competitionAdded(ActionEvent event) {
 		
 		BorderPane borderPane = new BorderPane();
@@ -497,8 +511,6 @@ public class competitionsTracker extends Application {
         
 	}// End of competitionAdded Method.
 	
-	//Abdulaziz
-	//Done, add comments.
 	public void browseWebsite(Competition competition) {
 
 		if(competition != null) {
@@ -521,11 +533,7 @@ public class competitionsTracker extends Application {
 
 	}// End of browseWebsite Method.
 	
-	//Meshal
-	// Add your comments.
 	public void showTeams(ActionEvent event, Competition competition) {
-		// note : add this Button (back). It is static Button.
-		// Look at start method I used (back.setOnAction).
 
 		if (competition != null) {
 			TableColumn<Team, Integer> column1 = new TableColumn<>("Team Number");
@@ -556,29 +564,23 @@ public class competitionsTracker extends Application {
 			for (int i = 0; i < teams.size(); ++i)
 				tableView.getItems().add(teams.get(i));
 
-			// Create Text Field to get typed student information from the user, and set all
+			// Create Text Field to get typed team information from the user, and set all
 			// necessary things.
 			TextField addName = new TextField();
 			addName.setPromptText("Name");
 			addName.setMaxWidth(column1.getPrefWidth() - 100);
-			TextField addId = new TextField();
-			addId.setMaxWidth(column2.getPrefWidth() - 100);
-			addId.setPromptText("ID");
 			TextField setRank = new TextField();
 			setRank.setMaxWidth(column3.getPrefWidth() - 100);
 			setRank.setPromptText("Rank");
 
 			// Create Label to add names and all Text Fields.
-			Label IDView = new Label("ID : ", addId);
 			Label NameView = new Label("Name : ", addName);
 			Label RankView = new Label("Rank : ", setRank);
 
 			// Set all necessary things.
-			IDView.setContentDisplay(ContentDisplay.RIGHT);
 			NameView.setContentDisplay(ContentDisplay.RIGHT);
 
 			RankView.setContentDisplay(ContentDisplay.RIGHT);
-			IDView.setPadding(new Insets(5, 5, 5, 5));
 			NameView.setPadding(new Insets(5, 5, 5, 5));
 
 			RankView.setPadding(new Insets(5, 5, 5, 5));
@@ -589,7 +591,7 @@ public class competitionsTracker extends Application {
 
 			// Create HBox, add buttons and set all necessary things.
 			HBox hbox = new HBox();
-			hbox.getChildren().addAll(IDView, NameView, RankView);
+			hbox.getChildren().addAll(NameView, RankView);
 			hbox.setAlignment(Pos.CENTER);
 
 			// Create BottomBorderPane and set all necessary things.
@@ -627,39 +629,52 @@ public class competitionsTracker extends Application {
 			borderPane.setTop(topBorder);
 			BorderPane.setMargin(tableView, new Insets(0, 10, 0, 10));
 
-			// Set an action to "Add" Button, and do all necessary things to add the student
-			// to the competition.
+			// Set an action to "Add" Button, and do all necessary things to add a team to the competition.
 			addButton.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
 				public void handle(ActionEvent e) {
-
+					// setting Alert class for raised errors
 					Alert errorAlert = new Alert(AlertType.ERROR);
 					errorAlert.setHeaderText("Invalid input");
 
-					if (!addId.getText().isBlank() && !addName.getText().isBlank() && !setRank.getText().isBlank()) {
-						try {
-							Team team = new Team(addName.getText(), Integer.parseInt(addId.getText()));
-							team.setRank(setRank.getText());
-							((CompetitionTB) competition).addTeam(team);
-							addId.clear();
-							addName.clear();
-							setRank.clear();
-							tableView.getItems().add(((CompetitionTB) competition).getTeams()
-									.get(((CompetitionTB) competition).getTeams().size() - 1));
-						} catch (NumberFormatException er) {
-							// To raise error if anything went wrong.
-							errorAlert.setContentText("ID should be numbers");
+					// if text fields are not empty
+					if (!addName.getText().isBlank() && !setRank.getText().isBlank()) {
+						// if name is a string and rank is not a string
+						if (addName.getText().matches("[a-zA-Z]+") && !setRank.getText().matches("[a-zA-Z]+")) {
+							try {
+								Team team = new Team(addName.getText(), tableView.getItems().size() + 1);
+								team.setRank(setRank.getText());
+								((CompetitionTB) competition).addTeam(team);
+								
+								tableView.getItems().add(((CompetitionTB) competition).getTeams()
+										.get(((CompetitionTB) competition).getTeams().size() - 1));
+							} catch (NumberFormatException er) {
+								// To raise error if anything went wrong or id is not a number.
+								errorAlert.setContentText("Team number should be numbers");
+								errorAlert.showAndWait();
+							}
+						}
+						// if name is not a string or rank is a string
+						else {
+							if(setRank.getText().matches("[a-zA-Z]+"))
+								errorAlert.setContentText("Rank should be numbers or (-) if the competition is not over due.");
+							
+							if (!addName.getText().matches("[a-zA-Z]+"))
+								errorAlert.setContentText("Name should be string");
 							errorAlert.showAndWait();
 						}
-					} else {
-						// To raise error if anything went wrong.
+					}
+					// if text fields are empty
+					else {
 						errorAlert.setContentText("Fill all information!");
 						errorAlert.showAndWait();
 					}
+					//addTeamNumber.clear();
+					addName.clear();
+					setRank.clear();
 				}
-			}); // End of addButton.setOnAction.
+			});
 			
-
 			// Set an action when any row has been Clicked.
 			tableView.setOnMouseClicked((MouseEvent ev) -> {
 				// To get the selectedStudent from table View.
@@ -708,8 +723,6 @@ public class competitionsTracker extends Application {
 
 	}// End of showTeams Method.
 	
-	// Naif
-	// Add your comments.
 	public void showTeamMembers(ActionEvent event,Competition competition, Team team) {
 		
 		TableColumn<Student, Integer> column1 = new TableColumn<>("ID");
@@ -867,7 +880,6 @@ public class competitionsTracker extends Application {
 		}
 		
 	}
-	
 	
 //-------------------------------------------------------------------------------------------	
 } // End of competitionsTracker Class
