@@ -537,26 +537,26 @@ public class competitionsTracker extends Application {
 	
 	public void showTeams(ActionEvent event, Competition competition) {
 
-		if (competition != null) {
+		if (competition != null) {														// First we check if the competition exists. 
 			TableColumn<Team, Integer> column1 = new TableColumn<>("Team Number");
 			column1.setCellValueFactory(new PropertyValueFactory<>("teamNumber"));
 			TableColumn<Team, String> column2 = new TableColumn<>("Team Name");
-			column2.setCellValueFactory(new PropertyValueFactory<>("teamName"));
+			column2.setCellValueFactory(new PropertyValueFactory<>("teamName"));								// Creating the table columns.
 			TableColumn<Team, String> column3 = new TableColumn<>("Rank");
 			column3.setCellValueFactory(new PropertyValueFactory<>("rank"));
-			column3.setCellFactory(TextFieldTableCell.forTableColumn());
+			column3.setCellFactory(TextFieldTableCell.forTableColumn());						
 			column3.setOnEditCommit((CellEditEvent<Team, String> rank) -> {
 				
-				if(!rank.getNewValue().isBlank() && !rank.getNewValue().matches("[a-zA-Z]+"))
-					((Team) rank.getTableView().getItems().get(rank.getTablePosition().getRow())).setRank(rank.getNewValue());
+				if(!rank.getNewValue().isBlank() && !rank.getNewValue().matches("[a-zA-Z]+"))						// Checking if the entered rank is not empty and it is not alphabetic characters.
+					((Team) rank.getTableView().getItems().get(rank.getTablePosition().getRow())).setRank(rank.getNewValue());	// If true, replace the old ranke by the new one. 
 				else{
 					Alert errorAlert = new Alert(AlertType.ERROR);
-					errorAlert.setHeaderText("Invalid input");
+					errorAlert.setHeaderText("Invalid input");									// Otherwise, make an error alert that the input is not valid.
 					errorAlert.setContentText("Rank should be numbers or (-) if the competition is not over due.");
 					errorAlert.show();
 				}
 			});
-			column3.setEditable(true);
+			column3.setEditable(true);													// Making the rank column editable.
 			column1.setPrefWidth(200);
 			column2.setPrefWidth(200);
 			column3.setPrefWidth(200);
@@ -602,7 +602,7 @@ public class competitionsTracker extends Application {
 			BottomBorderPane.setLeft(back);
 			BottomBorderPane.setRight(hbox);
 
-			// Button that will prepare email to a student.
+			// Buttons that will prepare email to a student and show team members.
 			Button showMembers = new Button("Show Members");
 			Button prepareEmail = new Button("Prepare Email");
 			showMembers.setFont(new Font("Arial", 10));
@@ -691,6 +691,7 @@ public class competitionsTracker extends Application {
 						errorAlert.showAndWait();
 					}
 				});// End of prepareEmail.setOnAction
+				// set an action to showMembers.
 				showMembers.setOnAction(e -> {
 					try {
 						if(selectedTeam != null)
