@@ -40,7 +40,6 @@ import javafx.stage.Stage;
 
 public class competitionsTracker extends Application {
 	
-
 	private static ArrayList<Competition> competitions = new ArrayList<Competition>();
 	static TableView<Competition> tableViewC;
 	static Button back = new Button("back");
@@ -88,9 +87,6 @@ public class competitionsTracker extends Application {
 	//JavaFx
 //-------------------------------------------------------------------------------------------
 	
-	
-	
-	
 	// Done, add comments.
 	@Override
 	public void start(Stage arg0) throws Exception {
@@ -116,9 +112,8 @@ public class competitionsTracker extends Application {
     public void stop() {
        // This method will be executed automatically after competitionsTracker shut down.
     }
-	
-	// Done
-	public Scene showCompetitions() {		
+
+	public Scene showCompetitions() {
     	
         // To create all needed columns that will contain competitions information.
     	TableColumn<Competition, String> column1 = new TableColumn<>("Name");
@@ -160,6 +155,9 @@ public class competitionsTracker extends Application {
         Button ShowPar = new Button("Show Participants");
         Button browseButton = new Button("Browse Website");
         Button TrackButton = new Button("Track a new competition");
+        ShowPar.setPrefSize(150, 25);
+        browseButton.setPrefSize(150, 25);
+        TrackButton.setPrefSize(150, 25);
         
         // Set an action when any row has been Clicked.
         tableViewC.setOnMouseClicked((MouseEvent event) -> {
@@ -173,7 +171,7 @@ public class competitionsTracker extends Application {
         	else if(selectedCompetition instanceof CompetitionTB)
         		ShowPar.setOnAction(e -> showTeams(e,selectedCompetition));
         	
-        	browseButton.setOnAction(e -> browseWebsite(selectedCompetition));
+        	browseButton.setOnAction(e -> browseWebsite(e, selectedCompetition));
 	        		
         });// End of  tableViewC.setOnMouseClicked.
         TrackButton.setOnAction(e -> TrackCompetition(e));
@@ -200,8 +198,7 @@ public class competitionsTracker extends Application {
         return scene;
         
 	}// End of showCompetitions Method.
-	
-	// Done 
+	 
 	public void ShowSoloParticipants(ActionEvent event,Competition competition) {
 
     	// To create all needed columns that will contain students information.
@@ -212,8 +209,17 @@ public class competitionsTracker extends Application {
         TableColumn<Student, String> column3 = new TableColumn<>("Rank");
         column3.setCellValueFactory(new PropertyValueFactory<>("rank"));
         column3.setCellFactory(TextFieldTableCell.forTableColumn());
-        column3.setOnEditCommit((CellEditEvent<Student, String> t) -> 
-            ((Student) t.getTableView().getItems().get(t.getTablePosition().getRow())).setRank(t.getNewValue()));
+        column3.setOnEditCommit((CellEditEvent<Student, String> rank) -> {
+        	
+			if(!rank.getNewValue().isBlank() && !rank.getNewValue().matches("[a-zA-Z]+"))
+				((Student) rank.getTableView().getItems().get(rank.getTablePosition().getRow())).setRank(rank.getNewValue());
+			else{
+				Alert errorAlert = new Alert(AlertType.ERROR);
+				errorAlert.setHeaderText("Invalid input");
+				errorAlert.setContentText("Rank should be numbers or (-) if the competition is not over due.");
+				errorAlert.show();
+			} 
+        });
         column3.setEditable(true);
         
         TableColumn<Student, String> column4 = new TableColumn<>("Major");
@@ -246,9 +252,6 @@ public class competitionsTracker extends Application {
         TextField addId = new TextField();
         addId.setMaxWidth(column2.getPrefWidth()-100);
         addId.setPromptText("ID");
-        TextField setRank = new TextField();
-        setRank.setMaxWidth(column3.getPrefWidth()-100);
-        setRank.setPromptText("Rank");
         TextField addMajor = new TextField();
         addMajor.setMaxWidth(column4.getPrefWidth()-100);
         addMajor.setPromptText("Major");
@@ -257,17 +260,14 @@ public class competitionsTracker extends Application {
     	Label  IDView = new Label("ID : ", addId);
     	Label  NameView = new Label("Name : ", addName);
     	Label  MajorView = new Label("Major : ", addMajor);
-    	Label  RankView = new Label("Rank : ", setRank);
     	
     	// Set all necessary things.
     	IDView.setContentDisplay(ContentDisplay.RIGHT);
     	NameView.setContentDisplay(ContentDisplay.RIGHT);
     	MajorView.setContentDisplay(ContentDisplay.RIGHT);
-    	RankView.setContentDisplay(ContentDisplay.RIGHT);
     	IDView.setPadding(new Insets(5, 5, 5, 5));
     	NameView.setPadding(new Insets(5, 5, 5, 5));
     	MajorView.setPadding(new Insets(5, 5, 5, 5));
-    	RankView.setPadding(new Insets(5, 5, 5, 5));
     	
     	// Button that will add the student.
         Button addButton = new Button("Add");
@@ -275,7 +275,7 @@ public class competitionsTracker extends Application {
         
         // Create HBox, add buttons and set all necessary things.
         HBox hbox = new HBox();
-        hbox.getChildren().addAll(IDView,NameView,MajorView,RankView);
+        hbox.getChildren().addAll(IDView,NameView,MajorView);
         hbox.setAlignment(Pos.CENTER);
         
         // Create BottomBorderPane and set all necessary things.
@@ -314,12 +314,12 @@ public class competitionsTracker extends Application {
             	Alert errorAlert = new Alert(AlertType.ERROR);
 		      	errorAlert.setHeaderText("Invalid input");
 		      	String ContentText = "";
-            	if(!addId.getText().isBlank() && !addMajor.getText().isBlank() && !addName.getText().isBlank() && !setRank.getText().isBlank()) {
+            	if(!addId.getText().isBlank() && !addMajor.getText().isBlank() && !addName.getText().isBlank()) {
             		
-            		if(addName.getText().matches("[a-zA-Z]+")  && addMajor.getText().matches("[a-zA-Z]+") && addId.getText().matches(".*[0-9].*")  && (setRank.getText().matches(".*[0-9].*") || setRank.getText().equals("-"))) 
+            		if( (addName.getText().matches("[a-zA-Z]+") || (addName.getText().contains(" ") && !addName.getText().matches(".*[0-9].*"))) && addMajor.getText().matches("[a-zA-Z]+") && addId.getText().matches(".*[0-9].*")) 
             		{
 	            		Student student =new Student(Integer.parseInt(addId.getText()),addMajor.getText(),addName.getText());
-	            		student.setRank(setRank.getText());
+	            		student.setRank("-");
 	            		((CompetitionSolo) competition).addStudent(student);	         
 	            		tableView.getItems().add(((CompetitionSolo) competition).getIndividuals().get(((CompetitionSolo) competition).getIndividuals().size()-1));
             		}
@@ -333,10 +333,6 @@ public class competitionsTracker extends Application {
 						
 						if(!addMajor.getText().matches("[a-zA-Z]+"))
 							ContentText = ContentText + "\nMajor should be string.";
-							
-						
-						if(!setRank.getText().matches(".*[0-9].*") || !setRank.getText().equals("-"))
-							ContentText = ContentText + "\nRank should be numbers \nor (-) if the competition is not over due.";	
 					}		
     			}	
             	else {
@@ -352,7 +348,6 @@ public class competitionsTracker extends Application {
             	addId.clear();
         		addMajor.clear();
         		addName.clear();
-        		setRank.clear();
             }
             
     		}); // End of addButton.setOnAction.
@@ -387,7 +382,6 @@ public class competitionsTracker extends Application {
         thisStage.show();
 
 	}// End of ShowSoloParticipants Method.
-
 
 	public void TrackCompetition(ActionEvent event) {
 		
@@ -511,20 +505,28 @@ public class competitionsTracker extends Application {
         
 	}// End of competitionAdded Method.
 	
-	public void browseWebsite(Competition competition) {
+	public void browseWebsite(ActionEvent event, Competition competition) {
 
 		if(competition != null) {
 			
 			WebView Webview = new WebView();
             WebEngine webEngine = Webview.getEngine();
             webEngine.load(competition.getLink());
-
-		   	Scene scene = new Scene(Webview,Webview.getPrefWidth(), Webview.getPrefHeight());
-		   	Stage stage = new Stage();
-		   	stage.setTitle("KFUPM News Team Browser");
-		    stage.setScene(scene);
-		    stage.show();
-        }
+            
+            BorderPane borderPane = new BorderPane();
+            BorderPane borderPane1 = new BorderPane();
+            borderPane1.setCenter(back);
+            
+            borderPane.setBottom(borderPane1);
+    		borderPane.setPadding(new Insets(10, 10, 10, 10));
+    		borderPane.setCenter(Webview);
+    		
+		   	Scene scene = new Scene(borderPane,Webview.getPrefWidth(), Webview.getPrefHeight());
+		   	Node node = (Node) event.getSource();
+	        Stage thisStage = (Stage) node.getScene().getWindow();
+	        thisStage.setScene(scene);
+	        thisStage.show();
+	        }
 		else {
 			Alert errorAlert = new Alert(AlertType.ERROR);
       		errorAlert.setContentText("Select a competition!");
@@ -543,10 +545,18 @@ public class competitionsTracker extends Application {
 			TableColumn<Team, String> column3 = new TableColumn<>("Rank");
 			column3.setCellValueFactory(new PropertyValueFactory<>("rank"));
 			column3.setCellFactory(TextFieldTableCell.forTableColumn());
-			column3.setOnEditCommit((CellEditEvent<Team, String> t) -> ((Team) t.getTableView().getItems()
-					.get(t.getTablePosition().getRow())).setRank(t.getNewValue()));
+			column3.setOnEditCommit((CellEditEvent<Team, String> rank) -> {
+				
+				if(!rank.getNewValue().isBlank() && !rank.getNewValue().matches("[a-zA-Z]+"))
+					((Team) rank.getTableView().getItems().get(rank.getTablePosition().getRow())).setRank(rank.getNewValue());
+				else{
+					Alert errorAlert = new Alert(AlertType.ERROR);
+					errorAlert.setHeaderText("Invalid input");
+					errorAlert.setContentText("Rank should be numbers or (-) if the competition is not over due.");
+					errorAlert.show();
+				}
+			});
 			column3.setEditable(true);
-
 			column1.setPrefWidth(200);
 			column2.setPrefWidth(200);
 			column3.setPrefWidth(200);
@@ -569,21 +579,12 @@ public class competitionsTracker extends Application {
 			TextField addName = new TextField();
 			addName.setPromptText("Name");
 			addName.setMaxWidth(column1.getPrefWidth() - 100);
-			TextField setRank = new TextField();
-			setRank.setMaxWidth(column3.getPrefWidth() - 100);
-			setRank.setPromptText("Rank");
 
 			// Create Label to add names and all Text Fields.
-			Label NameView = new Label("Name : ", addName);
-			Label RankView = new Label("Rank : ", setRank);
+			Label NameView = new Label("Team name : ", addName);
 
 			// Set all necessary things.
 			NameView.setContentDisplay(ContentDisplay.RIGHT);
-
-			RankView.setContentDisplay(ContentDisplay.RIGHT);
-			NameView.setPadding(new Insets(5, 5, 5, 5));
-
-			RankView.setPadding(new Insets(5, 5, 5, 5));
 
 			// Button that will add the student.
 			Button addButton = new Button("Add");
@@ -591,15 +592,15 @@ public class competitionsTracker extends Application {
 
 			// Create HBox, add buttons and set all necessary things.
 			HBox hbox = new HBox();
-			hbox.getChildren().addAll(NameView, RankView);
+			hbox.setSpacing(10);
+			hbox.getChildren().addAll(NameView, addButton);
 			hbox.setAlignment(Pos.CENTER);
 
 			// Create BottomBorderPane and set all necessary things.
 			BorderPane BottomBorderPane = new BorderPane();
 			BottomBorderPane.setPadding(new Insets(10, 10, 10, 10));
-			BottomBorderPane.setCenter(hbox);
 			BottomBorderPane.setLeft(back);
-			BottomBorderPane.setRight(addButton);
+			BottomBorderPane.setRight(hbox);
 
 			// Button that will prepare email to a student.
 			Button showMembers = new Button("Show Members");
@@ -638,12 +639,12 @@ public class competitionsTracker extends Application {
 					errorAlert.setHeaderText("Invalid input");
 
 					// if text fields are not empty
-					if (!addName.getText().isBlank() && !setRank.getText().isBlank()) {
+					if (!addName.getText().isBlank()) {
 						// if name is a string and rank is not a string
-						if (addName.getText().matches("[a-zA-Z]+") && !setRank.getText().matches("[a-zA-Z]+")) {
+						if(addName.getText().matches("[a-zA-Z]+") || (addName.getText().contains(" ") && !addName.getText().matches(".*[0-9].*"))) {
 							try {
 								Team team = new Team(addName.getText(), tableView.getItems().size() + 1);
-								team.setRank(setRank.getText());
+								team.setRank("-");
 								((CompetitionTB) competition).addTeam(team);
 								
 								tableView.getItems().add(((CompetitionTB) competition).getTeams()
@@ -656,11 +657,7 @@ public class competitionsTracker extends Application {
 						}
 						// if name is not a string or rank is a string
 						else {
-							if(setRank.getText().matches("[a-zA-Z]+"))
-								errorAlert.setContentText("Rank should be numbers or (-) if the competition is not over due.");
-							
-							if (!addName.getText().matches("[a-zA-Z]+"))
-								errorAlert.setContentText("Name should be string");
+							errorAlert.setContentText("Name should be string");
 							errorAlert.showAndWait();
 						}
 					}
@@ -671,7 +668,6 @@ public class competitionsTracker extends Application {
 					}
 					//addTeamNumber.clear();
 					addName.clear();
-					setRank.clear();
 				}
 			});
 			
@@ -790,7 +786,7 @@ public class competitionsTracker extends Application {
 				// if text fields are not empty
 				if (!addId.getText().isBlank() && !addName.getText().isBlank() && !addMajor.getText().isBlank()) {
 					// if name is a string
-					if (addName.getText().matches("[a-zA-Z]+")) {
+					if (addName.getText().matches("[a-zA-Z]+") || (addName.getText().contains(" ") && !addName.getText().matches(".*[0-9].*"))) {
 						try {
 							Student student = new Student(Integer.parseInt(addId.getText()), addMajor.getText(),
 									addName.getText());
