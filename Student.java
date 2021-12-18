@@ -1,10 +1,9 @@
 
-public class Student{
+public class Student {
 	private int id;
 	private String major;
 	private String name;
 	private String rank;
-	
 
 	public Student(int id, String major, String name) {
 
@@ -19,20 +18,55 @@ public class Student{
 	}
 
 	public String getName() {
-		
 		return name;
 	}
+
 	public int getId() {
-		
 		return id;
 	}
-	public String getRank() {
 
+	public String getRank() {
 		return rank;
 	}
-	public String getMajor() {
 
+	public String getMajor() {
 		return major;
 	}
-		
+
+}
+
+public class Student {
+	private int id;
+	private String major;
+	private String name;
+	private String rank;
+
+	public Student(int id, String major, String name) {
+
+		this.rank = "-";
+		this.id = id;
+		this.major = major;
+		this.name = name;
+	}
+
+	public void setRank(String rank) {
+		this.rank = rank;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public String getRank() {
+		return rank;
+	}
+
+	public String getMajor() {
+		return major;
+	}
+
 }
