@@ -1,5 +1,17 @@
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -32,392 +44,597 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
+public class CompetitionsTracker extends Application {
 
-// Before you run the competitionsTracker, you have to add JavaFx library and write three lines below this line on VM arguments. 
-//--module-path {your path of javafx-sdk} --add-modules javafx.controls
-//--add-modules=javafx.web
-//-Dcom.sun.webkit.useHTTP2Loader=false
-
-public class competitionsTracker extends Application {
-	
 	private static ArrayList<Competition> competitions = new ArrayList<Competition>();
 	static TableView<Competition> tableViewC;
 	static Button back = new Button("back");
-	
-	//static Button TrackButton = new Button("Track a new competition");
+
+	// static Button TrackButton = new Button("Track a new competition");
 
 	public static void main(String[] args) throws Exception {
-		
-		// Just for test the code:
-		CompetitionTB competition = new CompetitionTB("https://ultrahack.org/aiot-hackathon-stc","AIoT Hackathon with stc");
-		competition.setDate(2021, 12, 10);
-		CompetitionSolo competition2 = new CompetitionSolo("https://cyberhub.sa","CyberuHub");
-		competition2.setDate(2021, 12, 10);
-		Team team = new Team("SuperDevops", 1);
-		Team team2 = new Team("StackUnderflow", 2);
-		team.addStudent(new Student(222243860, "CS", "Bassel Alqahtani"));
-		team.addStudent(new Student(222246560, "SWE", "Naif Essam"));
-		team2.addStudent(new Student(222219260, "COE", "Majed Ahmad"));
-		team2.addStudent(new Student(222267500, "COE", "Saleh Mohammed"));
-		competition.addTeam(team);
-		competition.addTeam(team2);
-		addCompetition(competition);
-
-		competition2.addStudent(new Student(222256561, "CS", "Ahmad Mohammed"));
-		competition2.addStudent(new Student(222256560, "EE", "Abdullah Ali"));
-		competition2.addStudent(new Student(222279260, "MIS", "Abdulaziz fawwaz"));
-		competition2.addStudent(new Student(222256700, "SWE", "Faris Ahmad"));
-		addCompetition(competition2);
-	
 		launch(args);
-		
 	}
 
-	public static void addCompetition(CompetitionTB competition) {
+	public static void addCompetition(Competition competition) {
 		competitions.add(competition);
 	}
-	
-	public static void addCompetition(CompetitionSolo competition) {
-		competitions.add(competition);
-	}
+
 	public ArrayList<Competition> getCompetitions() {
 		return competitions;
 	}
-	
-	//JavaFx
+
+	// JavaFx
 //-------------------------------------------------------------------------------------------
-	
+
 	// Done, add comments.
 	@Override
 	public void start(Stage arg0) throws Exception {
-		// TODO Auto-generated method stub
-		 
+
+		read();
+
 		Scene scene = showCompetitions();
 
 		back.setPrefSize(90, 20);
 		back.setOnAction(e -> arg0.setScene(scene));
 
 		arg0.setTitle("Competitions Tracker");
-    	arg0.setScene(scene);
-    	arg0.show();
-    	showNotification();
-    	
-		
+		arg0.setScene(scene);
+		arg0.show();
+		showNotification();
+
 	}
-	
+
 	// Faris, add your comments.
-	// Write all competitions on excel file. Add all necessary methods (if there is any).
+	// Write all competitions on excel file. Add all necessary methods (if there is
+	// any).
 	// You can use start method to read competitions from excel file.
+
+	public void update() throws IOException {
+
+		// create work book (the area in the excel that has sheets)
+		XSSFWorkbook wb = new XSSFWorkbook();
+
+		XSSFRow row;
+		Cell c1;
+		Cell c2;
+		Cell c3;
+		Cell c4;
+		Cell c5;
+		Cell c6;
+		Cell c7;
+
+		for (int i = 0; i < competitions.size(); i++) {
+
+			XSSFSheet ws = wb.createSheet(competitions.get(i).getName());
+
+			row = ws.createRow(0);
+			c1 = row.createCell(0);
+			c2 = row.createCell(1);
+			c1.setCellValue("Competition Name");
+			c2.setCellValue(competitions.get(i).getName());
+
+			row = ws.createRow(1);
+			c1 = row.createCell(0);
+			c2 = row.createCell(1);
+			c1.setCellValue("Competition Link");
+			c2.setCellValue(competitions.get(i).getLink());
+
+			row = ws.createRow(2);
+			c1 = row.createCell(0);
+			c2 = row.createCell(1);
+			c1.setCellValue("Competition Date");
+			c2.setCellValue(competitions.get(i).getDate().toString());
+
+			if (competitions.get(i) instanceof CompetitionSolo) {
+
+				CompetitionSolo comp = (CompetitionSolo) competitions.get(i);
+				String[] headers = { "Student ID", "Student Name", "Major", "Rank" };
+				ArrayList<Student> students = comp.getIndividuals();
+
+				// row of headers
+				row = ws.createRow(4);
+
+				// creating the headers
+				for (int j = 0; j < headers.length; j++) {
+					Cell cell = row.createCell(j + 1);
+					cell.setCellValue(headers[j]);
+				}
+
+				// filling the data, each student in a row
+				for (int j = 0; j < students.size(); j++) {
+					Student student = students.get(j);
+
+					row = ws.createRow(j + 5);
+
+					c1 = row.createCell(0);
+					c2 = row.createCell(1);
+					c3 = row.createCell(2);
+					c4 = row.createCell(3);
+					c5 = row.createCell(4);
+
+					c1.setCellValue(j + 1);
+					c2.setCellValue(student.getId());
+					c3.setCellValue(student.getName());
+					c4.setCellValue(student.getMajor());
+					c5.setCellValue(student.getRank());
+				}
+
+				// autosize each column
+				for (int j = 0; j < 5; j++)
+					ws.autoSizeColumn(j);
+			}
+
+			else if (competitions.get(i) instanceof CompetitionTB) {
+				CompetitionTB comp = (CompetitionTB) competitions.get(i);
+				String[] headers = { "Team Number", "Team Name", "Student ID", "Student Name", "Major", "Rank" };
+
+				// getting the teams
+				ArrayList<Team> teams = comp.getTeams();
+
+				// row of headers
+				row = ws.createRow(4);
+
+				// creating the headers
+				for (int j = 0; j < headers.length; j++) {
+					Cell cell = row.createCell(j + 1);
+					cell.setCellValue(headers[j]);
+				}
+
+				// total number of rows
+				int k = 0;
+				for (Team team : teams)
+					k += team.getMembers().size();
+
+				// filling the data, each student in a row
+				for (Team team : teams) {
+					ArrayList<Student> students = team.getMembers();
+
+					for (Student student : students) {
+
+						row = ws.createRow(k + 5);
+
+						c1 = row.createCell(0);
+						c2 = row.createCell(1);
+						c3 = row.createCell(2);
+						c4 = row.createCell(3);
+						c5 = row.createCell(4);
+						c6 = row.createCell(5);
+						c7 = row.createCell(6);
+
+						c1.setCellValue(k + 1);
+						c2.setCellValue(team.getTeamNumber());
+						c3.setCellValue(team.getTeamName());
+						c4.setCellValue(student.getId());
+						c5.setCellValue(student.getName());
+						c6.setCellValue(student.getMajor());
+						c7.setCellValue(student.getRank());
+
+						k++;
+					}
+				}
+
+				// autosize each column
+				for (int j = 0; j < 7; j++)
+					ws.autoSizeColumn(j);
+			}
+		}
+
+		FileOutputStream out = new FileOutputStream(new File("malaf.xlsx"));
+		wb.write(out);
+		out.close();
+	}
+
+	public void read() throws IOException {
+		FileInputStream input = new FileInputStream(new File("malaf.xlsx"));
+		XSSFWorkbook wb = new XSSFWorkbook(input);
+
+		// for each sheet
+		for (int i = 0; i < wb.getNumberOfSheets(); i++) {
+			XSSFSheet sheet = wb.getSheetAt(i);
+
+			// get the general info of the competition
+			String compName = sheet.getRow(0).getCell(1).getStringCellValue();
+			String compLink = sheet.getRow(1).getCell(1).getStringCellValue();
+
+			String[] date = sheet.getRow(2).getCell(1).getStringCellValue().split("-");
+			int year = Integer.parseInt(date[0]);
+			int month = Integer.parseInt(date[1]);
+			int day = Integer.parseInt(date[2]);
+
+			// header to determine if the competition is Solo or Team based
+			String header = sheet.getRow(4).getCell(1).getStringCellValue();
+
+			// if the competition is Solo
+			if (header.equals("Student ID")) {
+
+				CompetitionSolo comp = new CompetitionSolo(compLink, compName);
+				comp.setDate(year, month, day);
+
+				// iterate over each row
+				int j = 5;
+				XSSFRow row = sheet.getRow(j);
+
+				while (row == null)
+					row = sheet.getRow(++j);
+
+				while (row != null) {
+
+					// getting the information of the student
+					int id = (int) row.getCell(1).getNumericCellValue();
+					String name = row.getCell(2).getStringCellValue();
+					String major = row.getCell(3).getStringCellValue();
+					String rank = row.getCell(4).getStringCellValue();
+
+					// add the student
+					Student student = new Student(id, major, name);
+					student.setRank(rank);
+					comp.addStudent(student);
+
+					// next row
+					row = sheet.getRow(++j);
+				}
+				addCompetition(comp);
+			}
+
+			// if the competition is Team based
+			else {
+				CompetitionTB comp = new CompetitionTB(compLink, compName);
+				comp.setDate(year, month, day);
+
+				// iterate over each row
+				int j = 5;
+				XSSFRow row = sheet.getRow(j);
+
+				while (row == null)
+					row = sheet.getRow(++j);
+
+				while (row != null) {
+					int teamNumber = (int) row.getCell(1).getNumericCellValue();
+					String teamName = row.getCell(2).getStringCellValue();
+					Team team = new Team(teamName, teamNumber);
+
+					int k = teamNumber;
+					while (k == teamNumber && row != null) {
+
+						// getting the information of the student
+						int id = (int) row.getCell(3).getNumericCellValue();
+						String name = row.getCell(4).getStringCellValue();
+						String major = row.getCell(5).getStringCellValue();
+						String rank = row.getCell(6).getStringCellValue();
+
+						// add the student
+						Student student = new Student(id, major, name);
+						student.setRank(rank);
+						team.addStudent(student);
+
+						// next row
+						row = sheet.getRow(++j);
+
+						// next k
+						if (row != null)
+							k = (int) row.getCell(1).getNumericCellValue();
+					}
+					comp.addTeam(team);
+				}
+				addCompetition(comp);
+			}
+		}
+	}
+
 	@Override
-    public void stop() {
-       // This method will be executed automatically after competitionsTracker shut down.
-    }
+	public void stop() throws IOException {
+		update();
+	}
 
+	// Done
 	public Scene showCompetitions() {
-    	
-        // To create all needed columns that will contain competitions information.
-    	TableColumn<Competition, String> column1 = new TableColumn<>("Name");
-        column1.setCellValueFactory(new PropertyValueFactory<>("name"));
-        
-        TableColumn<Competition, LocalDate> column2 = new TableColumn<>("Date");
-        column2.setCellValueFactory(new PropertyValueFactory<>("date"));
-        
-        TableColumn<Competition, String> column3 = new TableColumn<>("Type");
-        column3.setCellValueFactory(new PropertyValueFactory<>("type"));
-        
-        TableColumn<Competition, String> column4 = new TableColumn<>("Status");
-        column4.setCellValueFactory(new PropertyValueFactory<>("status"));
-        
-        TableColumn<Competition, String> column5 = new TableColumn<>("Link");
-        column5.setCellValueFactory(new PropertyValueFactory<>("link"));
-		
-        column1.setPrefWidth(150);
-        column2.setPrefWidth(150);
-        column3.setPrefWidth(100);
-        column4.setPrefWidth(100);
-        column5.setPrefWidth(288);
- 
- 
-        // Create Table View.
-        tableViewC = new TableView<Competition>();
 
-        tableViewC.getColumns().add(column1);
-        tableViewC.getColumns().add(column2);
-        tableViewC.getColumns().add(column3);
-        tableViewC.getColumns().add(column4);
-        tableViewC.getColumns().add(column5);
-     
-        // To add all competitions to the Table View.
-        for(Competition competition : competitions)
-        	tableViewC.getItems().add(competition);
-        
+		// To create all needed columns that will contain competitions information.
+		TableColumn<Competition, String> column1 = new TableColumn<>("Name");
+		column1.setCellValueFactory(new PropertyValueFactory<>("name"));
 
-        Button ShowPar = new Button("Show Participants");
-        Button browseButton = new Button("Browse Website");
-        Button TrackButton = new Button("Track a new competition");
-        ShowPar.setPrefSize(150, 25);
-        browseButton.setPrefSize(150, 25);
-        TrackButton.setPrefSize(150, 25);
-        
-        // Set an action when any row has been Clicked.
-        tableViewC.setOnMouseClicked((MouseEvent event) -> {
-        	
-        	// To get the selectedCompetition from table View.
-        	Competition selectedCompetition = tableViewC.getSelectionModel().getSelectedItem(); 
-        	
-        	// Set an action to "Show Participants" Button.
-        	if(selectedCompetition instanceof CompetitionSolo)
-        		ShowPar.setOnAction(e -> ShowSoloParticipants(e,selectedCompetition));
-        	else if(selectedCompetition instanceof CompetitionTB)
-        		ShowPar.setOnAction(e -> showTeams(e,selectedCompetition));
-        	
-        	browseButton.setOnAction(e -> browseWebsite(e, selectedCompetition));
-	        		
-        });// End of  tableViewC.setOnMouseClicked.
-        TrackButton.setOnAction(e -> TrackCompetition(e));
-        // Create HBox, add buttons and set all necessary things.
-        HBox hbox = new HBox();
-        hbox.getChildren().addAll(ShowPar,browseButton,TrackButton);  
-        hbox.setAlignment(Pos.CENTER);
-        hbox.setSpacing(20);
-        hbox.setPadding(new Insets(10, 10, 10, 10));
-	
-        // Create Label and set all necessary things.
-        Label label = new Label("Competitions Page");
-        label.setFont(new Font("Arial", 20));
-        label.setPadding(new Insets(10, 10, 10, 10)); 
-        
-        // Create BorderPane and set all necessary things.
-        BorderPane borderPane = new BorderPane();
-        borderPane.setTop(label); 
+		TableColumn<Competition, LocalDate> column2 = new TableColumn<>("Date");
+		column2.setCellValueFactory(new PropertyValueFactory<>("date"));
+
+		TableColumn<Competition, String> column3 = new TableColumn<>("Type");
+		column3.setCellValueFactory(new PropertyValueFactory<>("type"));
+
+		TableColumn<Competition, String> column4 = new TableColumn<>("Status");
+		column4.setCellValueFactory(new PropertyValueFactory<>("status"));
+
+		TableColumn<Competition, String> column5 = new TableColumn<>("Link");
+		column5.setCellValueFactory(new PropertyValueFactory<>("link"));
+
+		column1.setPrefWidth(150);
+		column2.setPrefWidth(150);
+		column3.setPrefWidth(100);
+		column4.setPrefWidth(100);
+		column5.setPrefWidth(288);
+
+		// Create Table View.
+		tableViewC = new TableView<Competition>();
+
+		tableViewC.getColumns().add(column1);
+		tableViewC.getColumns().add(column2);
+		tableViewC.getColumns().add(column3);
+		tableViewC.getColumns().add(column4);
+		tableViewC.getColumns().add(column5);
+
+		// To add all competitions to the Table View.
+		for (Competition competition : competitions)
+			tableViewC.getItems().add(competition);
+
+		Button ShowPar = new Button("Show Participants");
+		Button browseButton = new Button("Browse Website");
+		Button TrackButton = new Button("Track a new competition");
+		ShowPar.setPrefSize(150, 25);
+		browseButton.setPrefSize(150, 25);
+		TrackButton.setPrefSize(150, 25);
+
+		// Set an action when any row has been Clicked.
+		tableViewC.setOnMouseClicked((MouseEvent event) -> {
+
+			// To get the selectedCompetition from table View.
+			Competition selectedCompetition = tableViewC.getSelectionModel().getSelectedItem();
+
+			// Set an action to "Show Participants" Button.
+			if (selectedCompetition instanceof CompetitionSolo)
+				ShowPar.setOnAction(e -> ShowSoloParticipants(e, selectedCompetition));
+			else if (selectedCompetition instanceof CompetitionTB)
+				ShowPar.setOnAction(e -> showTeams(e, selectedCompetition));
+
+			browseButton.setOnAction(e -> browseWebsite(e, selectedCompetition));
+
+		});// End of tableViewC.setOnMouseClicked.
+		TrackButton.setOnAction(e -> TrackCompetition(e));
+		// Create HBox, add buttons and set all necessary things.
+		HBox hbox = new HBox();
+		hbox.getChildren().addAll(ShowPar, browseButton, TrackButton);
+		hbox.setAlignment(Pos.CENTER);
+		hbox.setSpacing(20);
+		hbox.setPadding(new Insets(10, 10, 10, 10));
+
+		// Create Label and set all necessary things.
+		Label label = new Label("Competitions Page");
+		label.setFont(new Font("Arial", 20));
+		label.setPadding(new Insets(10, 10, 10, 10));
+
+		// Create BorderPane and set all necessary things.
+		BorderPane borderPane = new BorderPane();
+		borderPane.setTop(label);
 		borderPane.setCenter(tableViewC);
-		borderPane.setBottom(hbox);  
+		borderPane.setBottom(hbox);
 		BorderPane.setMargin(tableViewC, new Insets(0, 10, 0, 10));
 		// Create a scene and return it to display.
-    	Scene scene = new Scene(borderPane,810, 450);
-        return scene;
-        
-	}// End of showCompetitions Method.
-	 
-	public void ShowSoloParticipants(ActionEvent event,Competition competition) {
+		Scene scene = new Scene(borderPane, 810, 450);
+		return scene;
 
-    	// To create all needed columns that will contain students information.
-        TableColumn<Student, Integer> column1 = new TableColumn<>("ID");
-        column1.setCellValueFactory(new PropertyValueFactory<>("id"));
-        TableColumn<Student, String> column2 = new TableColumn<>("Name");
-        column2.setCellValueFactory(new PropertyValueFactory<>("name"));
-        TableColumn<Student, String> column3 = new TableColumn<>("Rank");
-        column3.setCellValueFactory(new PropertyValueFactory<>("rank"));
-        column3.setCellFactory(TextFieldTableCell.forTableColumn());
-        column3.setOnEditCommit((CellEditEvent<Student, String> rank) -> {
-        	
-			if(!rank.getNewValue().isBlank() && !rank.getNewValue().matches("[a-zA-Z]+"))
-				((Student) rank.getTableView().getItems().get(rank.getTablePosition().getRow())).setRank(rank.getNewValue());
-			else{
+	}// End of showCompetitions Method.
+
+	public void ShowSoloParticipants(ActionEvent event, Competition competition) {
+
+		// To create all needed columns that will contain students information.
+		TableColumn<Student, Integer> column1 = new TableColumn<>("ID");
+		column1.setCellValueFactory(new PropertyValueFactory<>("id"));
+		TableColumn<Student, String> column2 = new TableColumn<>("Name");
+		column2.setCellValueFactory(new PropertyValueFactory<>("name"));
+		TableColumn<Student, String> column3 = new TableColumn<>("Rank");
+		column3.setCellValueFactory(new PropertyValueFactory<>("rank"));
+		column3.setCellFactory(TextFieldTableCell.forTableColumn());
+		column3.setOnEditCommit((CellEditEvent<Student, String> rank) -> {
+
+			if (!rank.getNewValue().isBlank() && !rank.getNewValue().matches("[a-zA-Z]+"))
+				((Student) rank.getTableView().getItems().get(rank.getTablePosition().getRow()))
+						.setRank(rank.getNewValue());
+			else {
 				Alert errorAlert = new Alert(AlertType.ERROR);
 				errorAlert.setHeaderText("Invalid input");
 				errorAlert.setContentText("Rank should be numbers or (-) if the competition is not over due.");
 				errorAlert.show();
-			} 
-        });
-        column3.setEditable(true);
-        
-        TableColumn<Student, String> column4 = new TableColumn<>("Major");
-        column4.setCellValueFactory(new PropertyValueFactory<>("major"));
+			}
+		});
+		column3.setEditable(true);
 
-        column1.setPrefWidth(200);
-        column2.setPrefWidth(200);
-        column3.setPrefWidth(200);
-        column4.setPrefWidth(187);
-        
-        // Create Table View, add all columns and set all necessary things.
-        TableView<Student> tableView = new TableView<Student>();
-    	tableView.setPrefSize(50, 500);
-        tableView.getColumns().add(column1);
-        tableView.getColumns().add(column2);
-        tableView.getColumns().add(column4);
-        tableView.getColumns().add(column3);
-        tableView.setEditable(true);
-        
+		TableColumn<Student, String> column4 = new TableColumn<>("Major");
+		column4.setCellValueFactory(new PropertyValueFactory<>("major"));
 
-        // To add all students to the Table View.
-        ArrayList<Student> individuals = ((CompetitionSolo) competition).getIndividuals();
-		for(int i = 0;i < individuals.size();++i)
+		column1.setPrefWidth(200);
+		column2.setPrefWidth(200);
+		column3.setPrefWidth(200);
+		column4.setPrefWidth(187);
+
+		// Create Table View, add all columns and set all necessary things.
+		TableView<Student> tableView = new TableView<Student>();
+		tableView.setPrefSize(50, 500);
+		tableView.getColumns().add(column1);
+		tableView.getColumns().add(column2);
+		tableView.getColumns().add(column4);
+		tableView.getColumns().add(column3);
+		tableView.setEditable(true);
+
+		// To add all students to the Table View.
+		ArrayList<Student> individuals = ((CompetitionSolo) competition).getIndividuals();
+		for (int i = 0; i < individuals.size(); ++i)
 			tableView.getItems().add(individuals.get(i));
-			
-		// Create Text Field to get typed student information from the user, and set all necessary things.
+
+		// Create Text Field to get typed student information from the user, and set all
+		// necessary things.
 		TextField addName = new TextField();
 		addName.setPromptText("Name");
-		addName.setMaxWidth(column1.getPrefWidth()-100);
-        TextField addId = new TextField();
-        addId.setMaxWidth(column2.getPrefWidth()-100);
-        addId.setPromptText("ID");
-        TextField addMajor = new TextField();
-        addMajor.setMaxWidth(column4.getPrefWidth()-100);
-        addMajor.setPromptText("Major");
-		
-        // Create Label to add names and all Text Fields.
-    	Label  IDView = new Label("ID : ", addId);
-    	Label  NameView = new Label("Name : ", addName);
-    	Label  MajorView = new Label("Major : ", addMajor);
-    	
-    	// Set all necessary things.
-    	IDView.setContentDisplay(ContentDisplay.RIGHT);
-    	NameView.setContentDisplay(ContentDisplay.RIGHT);
-    	MajorView.setContentDisplay(ContentDisplay.RIGHT);
-    	IDView.setPadding(new Insets(5, 5, 5, 5));
-    	NameView.setPadding(new Insets(5, 5, 5, 5));
-    	MajorView.setPadding(new Insets(5, 5, 5, 5));
-    	
-    	// Button that will add the student.
-        Button addButton = new Button("Add");
-        addButton.setPrefSize(90, 20);
-        
-        // Create HBox, add buttons and set all necessary things.
-        HBox hbox = new HBox();
-        hbox.getChildren().addAll(IDView,NameView,MajorView);
-        hbox.setAlignment(Pos.CENTER);
-        
-        // Create BottomBorderPane and set all necessary things.
-    	BorderPane BottomBorderPane = new BorderPane();
-    	BottomBorderPane.setPadding(new Insets(10, 10, 10, 10));
-    	BottomBorderPane.setCenter(hbox);
-    	BottomBorderPane.setLeft(back);
-    	BottomBorderPane.setRight(addButton);
+		addName.setMaxWidth(column1.getPrefWidth() - 100);
+		TextField addId = new TextField();
+		addId.setMaxWidth(column2.getPrefWidth() - 100);
+		addId.setPromptText("ID");
+		TextField addMajor = new TextField();
+		addMajor.setMaxWidth(column4.getPrefWidth() - 100);
+		addMajor.setPromptText("Major");
 
-    	// Button that will prepare email to a student.
-        Button prepareEmail = new Button("Prepare email");
-        prepareEmail.setPrefSize(90, 20);
-        
-        Label label = new Label("Participants");
-        label.setFont(new Font("Arial", 20));
-        
-        // Create topBorder and set all necessary things.
-        BorderPane topBorder = new BorderPane();
-        topBorder.setPadding(new Insets(10, 10, 10, 10));
-        topBorder.setLeft(label);
-        topBorder.setRight(prepareEmail);
-        
-        
-        // Create primary borderPane and set all necessary things.
+		// Create Label to add names and all Text Fields.
+		Label IDView = new Label("ID : ", addId);
+		Label NameView = new Label("Name : ", addName);
+		Label MajorView = new Label("Major : ", addMajor);
+
+		// Set all necessary things.
+		IDView.setContentDisplay(ContentDisplay.RIGHT);
+		NameView.setContentDisplay(ContentDisplay.RIGHT);
+		MajorView.setContentDisplay(ContentDisplay.RIGHT);
+		IDView.setPadding(new Insets(5, 5, 5, 5));
+		NameView.setPadding(new Insets(5, 5, 5, 5));
+		MajorView.setPadding(new Insets(5, 5, 5, 5));
+
+		// Button that will add the student.
+		Button addButton = new Button("Add");
+		addButton.setPrefSize(90, 20);
+
+		// Create HBox, add buttons and set all necessary things.
+		HBox hbox = new HBox();
+		hbox.getChildren().addAll(IDView, NameView, MajorView);
+		hbox.setAlignment(Pos.CENTER);
+
+		// Create BottomBorderPane and set all necessary things.
+		BorderPane BottomBorderPane = new BorderPane();
+		BottomBorderPane.setPadding(new Insets(10, 10, 10, 10));
+		BottomBorderPane.setCenter(hbox);
+		BottomBorderPane.setLeft(back);
+		BottomBorderPane.setRight(addButton);
+
+		// Button that will prepare email to a student.
+		Button prepareEmail = new Button("Prepare email");
+		prepareEmail.setPrefSize(90, 20);
+
+		Label label = new Label("Participants");
+		label.setFont(new Font("Arial", 20));
+
+		// Create topBorder and set all necessary things.
+		BorderPane topBorder = new BorderPane();
+		topBorder.setPadding(new Insets(10, 10, 10, 10));
+		topBorder.setLeft(label);
+		topBorder.setRight(prepareEmail);
+
+		// Create primary borderPane and set all necessary things.
 		BorderPane borderPane = new BorderPane();
-        borderPane.setBottom(BottomBorderPane);
+		borderPane.setBottom(BottomBorderPane);
 		borderPane.setCenter(tableView);
 		borderPane.setTop(topBorder);
 		BorderPane.setMargin(tableView, new Insets(0, 10, 0, 10));
-		
-		// Set an action to "Add" Button, and do all necessary things to add the student to the competition.
-        addButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent e) {
-            	
-            	Alert errorAlert = new Alert(AlertType.ERROR);
-		      	errorAlert.setHeaderText("Invalid input");
-		      	String ContentText = "";
-            	if(!addId.getText().isBlank() && !addMajor.getText().isBlank() && !addName.getText().isBlank()) {
-            		
-            		if( (addName.getText().matches("[a-zA-Z]+") || (addName.getText().contains(" ") && !addName.getText().matches(".*[0-9].*"))) && addMajor.getText().matches("[a-zA-Z]+") && addId.getText().matches(".*[0-9].*")) 
-            		{
-	            		Student student =new Student(Integer.parseInt(addId.getText()),addMajor.getText(),addName.getText());
-	            		student.setRank("-");
-	            		((CompetitionSolo) competition).addStudent(student);	         
-	            		tableView.getItems().add(((CompetitionSolo) competition).getIndividuals().get(((CompetitionSolo) competition).getIndividuals().size()-1));
-            		}
-            		// if name is not a string or rank is a string
-					else {
-						if(!addId.getText().matches(".*[0-9].*"))
-	        		    	ContentText = ContentText + "\nID should be numbers.";
-						
-						if(!addName.getText().matches("[a-zA-Z]+"))
-							ContentText = ContentText + "\nName should be string.";
-						
-						if(!addMajor.getText().matches("[a-zA-Z]+"))
-							ContentText = ContentText + "\nMajor should be string.";
-					}		
-    			}	
-            	else {
-            		// To raise error if anything went wrong.
-            		errorAlert.setContentText("Fill all information!");
-            		errorAlert.showAndWait();
-            		}	
 
-            	if(!ContentText.isEmpty()) {
-            		errorAlert.setContentText(ContentText);
-					errorAlert.showAndWait();}
-            	
-            	addId.clear();
-        		addMajor.clear();
-        		addName.clear();
-            }
-            
-    		}); // End of addButton.setOnAction.
-       
-        // Set an action when any row has been Clicked.
-        tableView.setOnMouseClicked((MouseEvent ev) -> {	
-        	// To get the selectedStudent from table View.
-        	Student selectedStudent = tableView.getSelectionModel().getSelectedItem(); 
-        	
-        	//Set an action to prepareEmail.
-        	prepareEmail.setOnAction(e -> {
-        	CompetitionManger Manger = new CompetitionManger(competition);	        	
-        	try {
-				if(selectedStudent != null)
-					Manger.prepareEmail(selectedStudent);
-				else
-					throw new Exception();
-			} catch (Exception e1) {
+		// Set an action to "Add" Button, and do all necessary things to add the student
+		// to the competition.
+		addButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+
 				Alert errorAlert = new Alert(AlertType.ERROR);
-				errorAlert.setHeaderText("Error");
-				errorAlert.setContentText("Select a student!");
-				errorAlert.showAndWait();}
-        	});// End of prepareEmail.setOnAction  
-        	
-        }); // End of tableView.setOnMouseClicked  
-        
-        // Create a scene and set it on thisStage to display.
-    	Scene scene = new Scene(borderPane,810, 450);
-    	Node node = (Node) event.getSource();
-        Stage thisStage = (Stage) node.getScene().getWindow();
-        thisStage.setScene(scene);
-        thisStage.show();
+				errorAlert.setHeaderText("Invalid input");
+				String ContentText = "";
+				if (!addId.getText().isBlank() && !addMajor.getText().isBlank() && !addName.getText().isBlank()) {
+
+					if ((addName.getText().matches("[a-zA-Z]+")
+							|| (addName.getText().contains(" ") && !addName.getText().matches(".*[0-9].*")))
+							&& addMajor.getText().matches("[a-zA-Z]+") && addId.getText().matches(".*[0-9].*")) {
+						Student student = new Student(Integer.parseInt(addId.getText()), addMajor.getText(),
+								addName.getText());
+						student.setRank("-");
+						((CompetitionSolo) competition).addStudent(student);
+						tableView.getItems().add(((CompetitionSolo) competition).getIndividuals()
+								.get(((CompetitionSolo) competition).getIndividuals().size() - 1));
+					}
+					// if name is not a string or rank is a string
+					else {
+						if (!addId.getText().matches(".*[0-9].*"))
+							ContentText = ContentText + "\nID should be numbers.";
+
+						if (!addName.getText().matches("[a-zA-Z]+"))
+							ContentText = ContentText + "\nName should be string.";
+
+						if (!addMajor.getText().matches("[a-zA-Z]+"))
+							ContentText = ContentText + "\nMajor should be string.";
+					}
+				} else {
+					// To raise error if anything went wrong.
+					errorAlert.setContentText("Fill all information!");
+					errorAlert.showAndWait();
+				}
+
+				if (!ContentText.isEmpty()) {
+					errorAlert.setContentText(ContentText);
+					errorAlert.showAndWait();
+				}
+
+				addId.clear();
+				addMajor.clear();
+				addName.clear();
+			}
+
+		}); // End of addButton.setOnAction.
+
+		// Set an action when any row has been Clicked.
+		tableView.setOnMouseClicked((MouseEvent ev) -> {
+			// To get the selectedStudent from table View.
+			Student selectedStudent = tableView.getSelectionModel().getSelectedItem();
+
+			// Set an action to prepareEmail.
+			prepareEmail.setOnAction(e -> {
+				CompetitionManger Manger = new CompetitionManger(competition);
+				try {
+					if (selectedStudent != null)
+						Manger.prepareEmail(selectedStudent);
+					else
+						throw new Exception();
+				} catch (Exception e1) {
+					Alert errorAlert = new Alert(AlertType.ERROR);
+					errorAlert.setHeaderText("Error");
+					errorAlert.setContentText("Select a student!");
+					errorAlert.showAndWait();
+				}
+			});// End of prepareEmail.setOnAction
+
+		}); // End of tableView.setOnMouseClicked
+
+		// Create a scene and set it on thisStage to display.
+		Scene scene = new Scene(borderPane, 810, 450);
+		Node node = (Node) event.getSource();
+		Stage thisStage = (Stage) node.getScene().getWindow();
+		thisStage.setScene(scene);
+		thisStage.show();
 
 	}// End of ShowSoloParticipants Method.
 
 	public void TrackCompetition(ActionEvent event) {
-		
+
 		TextField competitionName = new TextField();
 		TextField competitionLink = new TextField();
-		DatePicker datePicker = new DatePicker();	
+		DatePicker datePicker = new DatePicker();
 		ComboBox<String> CompetitionType = new ComboBox<>();
-		
+
 		CompetitionType.setPrefSize(100, 20);
 		competitionLink.setPrefSize(300, 15);
 		competitionName.setPrefSize(300, 15);
 		CompetitionType.getItems().addAll("Solo", "Team Basd");
-		CompetitionType.setValue(""); 
-		
+		CompetitionType.setValue("");
+
 		Label label = new Label("Track a new competition");
-        label.setFont(new Font("Arial", 20));
+		label.setFont(new Font("Arial", 20));
 		Label competitionNameLable = new Label("Competition name:", competitionName);
 		Label competitionLinkLable = new Label("Competition link:   ", competitionLink);
 		Label typeLable = new Label("Competition type:  ", CompetitionType);
 		Label dateLable = new Label("Competition date:  ", datePicker);
-		
+
 		typeLable.setContentDisplay(ContentDisplay.RIGHT);
 		typeLable.setPadding(new Insets(10, 10, 10, 10));
-		
+
 		dateLable.setContentDisplay(ContentDisplay.RIGHT);
 		dateLable.setPadding(new Insets(10, 10, 10, 10));
 
 		competitionNameLable.setContentDisplay(ContentDisplay.RIGHT);
 		competitionNameLable.setPadding(new Insets(10, 10, 10, 10));
-		
+
 		competitionLinkLable.setContentDisplay(ContentDisplay.RIGHT);
 		competitionLinkLable.setPadding(new Insets(10, 10, 10, 10));
-		
 
 		VBox Vbox = new VBox(15);
-		Vbox.getChildren().addAll(label,competitionNameLable, competitionLinkLable, typeLable, dateLable);
+		Vbox.getChildren().addAll(label, competitionNameLable, competitionLinkLable, typeLable, dateLable);
 		Vbox.setPadding(new Insets(20, 10, 10, 20));
 
 		Button Track = new Button("Track");
@@ -428,67 +645,69 @@ public class competitionsTracker extends Application {
 
 		borderPane1.setLeft(back);
 		borderPane1.setRight(Track);
-		
 
 		BorderPane borderPane = new BorderPane();
 		borderPane.setCenter(Vbox);
-		
+
 		BorderPane.setMargin(Vbox, new Insets(0, 10, 0, 10));
 		borderPane.setBottom(borderPane1);
-		
+
 		Track.setOnAction(new EventHandler<ActionEvent>() {
-        @Override
-        public void handle(ActionEvent e) {
-        	
-        	Alert errorAlert = new Alert(AlertType.ERROR);
-	      	errorAlert.setHeaderText("Invalid input");
-		      	
-		      	
-        	if(!competitionName.getText().isBlank() && !competitionLink.getText().isBlank() && !CompetitionType.getValue().isBlank()) {
-        		try {
-        			
-        			int year = datePicker.getValue().getYear();
-            		int month =  datePicker.getValue().getMonth().getValue();
-            		int day = datePicker.getValue().getDayOfMonth();
+			@Override
+			public void handle(ActionEvent e) {
 
-        			if(CompetitionType.getValue().equals("Solo")) {   
-        				CompetitionSolo competition = new CompetitionSolo(competitionLink.getText(),competitionName.getText());
-        				competition.setDate(year, month, day);
-        				addCompetition(competition);
-        				tableViewC.getItems().add(competition);}
-        			else{
-        				CompetitionTB competition = new CompetitionTB(competitionLink.getText(),competitionName.getText());
-        				competition.setDate(year, month, day);
-        				addCompetition(competition);
-        				tableViewC.getItems().add(competition);}
-        			
-        			competitionAdded(e);
-        			} 
-	        	catch (Exception e1) {
-	        		errorAlert.setContentText("Enter a date!!");
-            		errorAlert.showAndWait();}
-        		
-    			competitionName.clear();
-				competitionLink.clear();
-				datePicker.setValue(null);
-				CompetitionType.setValue("");
-        	}
-        	else {
-        		errorAlert.setContentText("Fill all information");
-        		errorAlert.showAndWait();
-		      } 	
-        }});
+				Alert errorAlert = new Alert(AlertType.ERROR);
+				errorAlert.setHeaderText("Invalid input");
 
-		Scene scene = new Scene(borderPane,700, 350);
+				if (!competitionName.getText().isBlank() && !competitionLink.getText().isBlank()
+						&& !CompetitionType.getValue().isBlank()) {
+					try {
+
+						int year = datePicker.getValue().getYear();
+						int month = datePicker.getValue().getMonth().getValue();
+						int day = datePicker.getValue().getDayOfMonth();
+
+						if (CompetitionType.getValue().equals("Solo")) {
+							CompetitionSolo competition = new CompetitionSolo(competitionLink.getText(),
+									competitionName.getText());
+							competition.setDate(year, month, day);
+							addCompetition(competition);
+							tableViewC.getItems().add(competition);
+						} else {
+							CompetitionTB competition = new CompetitionTB(competitionLink.getText(),
+									competitionName.getText());
+							competition.setDate(year, month, day);
+							addCompetition(competition);
+							tableViewC.getItems().add(competition);
+						}
+
+						competitionAdded(e);
+					} catch (Exception e1) {
+						errorAlert.setContentText("Enter a date!!");
+						errorAlert.showAndWait();
+					}
+
+					competitionName.clear();
+					competitionLink.clear();
+					datePicker.setValue(null);
+					CompetitionType.setValue("");
+				} else {
+					errorAlert.setContentText("Fill all information");
+					errorAlert.showAndWait();
+				}
+			}
+		});
+
+		Scene scene = new Scene(borderPane, 700, 350);
 		Node node = (Node) event.getSource();
-	    Stage thisStage = (Stage) node.getScene().getWindow();
-	    thisStage.setScene(scene);
-	    thisStage.show();
-    
+		Stage thisStage = (Stage) node.getScene().getWindow();
+		thisStage.setScene(scene);
+		thisStage.show();
+
 	}// End of TrackCompetition Method.
-	
+
 	public void competitionAdded(ActionEvent event) {
-		
+
 		BorderPane borderPane = new BorderPane();
 		Text text = new Text("The competition has been added successfully");
 		text.setFont(Font.font(text.getText(), FontWeight.BOLD, FontPosture.REGULAR, 20));
@@ -496,67 +715,72 @@ public class competitionsTracker extends Application {
 		borderPane.setBottom(back);
 		borderPane.setPadding(new Insets(10, 10, 10, 10));
 		borderPane.setCenter(text);
-		
-		Scene scene = new Scene(borderPane,700, 300);
+
+		Scene scene = new Scene(borderPane, 700, 300);
 		Node node = (Node) event.getSource();
-        Stage thisStage = (Stage) node.getScene().getWindow();
-        thisStage.setScene(scene);
-        thisStage.show();
-        
+		Stage thisStage = (Stage) node.getScene().getWindow();
+		thisStage.setScene(scene);
+		thisStage.show();
+
 	}// End of competitionAdded Method.
-	
+
 	public void browseWebsite(ActionEvent event, Competition competition) {
 
-		if(competition != null) {
-			
+		if (competition != null) {
+
 			WebView Webview = new WebView();
-            WebEngine webEngine = Webview.getEngine();
-            webEngine.load(competition.getLink());
-            
-            BorderPane borderPane = new BorderPane();
-            BorderPane borderPane1 = new BorderPane();
-            borderPane1.setCenter(back);
-            
-            borderPane.setBottom(borderPane1);
-    		borderPane.setPadding(new Insets(10, 10, 10, 10));
-    		borderPane.setCenter(Webview);
-    		
-		   	Scene scene = new Scene(borderPane,Webview.getPrefWidth(), Webview.getPrefHeight());
-		   	Node node = (Node) event.getSource();
-	        Stage thisStage = (Stage) node.getScene().getWindow();
-	        thisStage.setScene(scene);
-	        thisStage.show();
-	        }
-		else {
+			WebEngine webEngine = Webview.getEngine();
+			webEngine.load(competition.getLink());
+
+			BorderPane borderPane = new BorderPane();
+			BorderPane borderPane1 = new BorderPane();
+			borderPane1.setCenter(back);
+
+			borderPane.setBottom(borderPane1);
+			borderPane.setPadding(new Insets(10, 10, 10, 10));
+			borderPane.setCenter(Webview);
+
+			Scene scene = new Scene(borderPane, Webview.getPrefWidth(), Webview.getPrefHeight());
+			Node node = (Node) event.getSource();
+			Stage thisStage = (Stage) node.getScene().getWindow();
+			thisStage.setScene(scene);
+			thisStage.show();
+		} else {
 			Alert errorAlert = new Alert(AlertType.ERROR);
-      		errorAlert.setContentText("Select a competition!");
-    		errorAlert.showAndWait();
-      		}
+			errorAlert.setContentText("Select a competition!");
+			errorAlert.showAndWait();
+		}
 
 	}// End of browseWebsite Method.
-	
+
 	public void showTeams(ActionEvent event, Competition competition) {
 
-		if (competition != null) {														// First we check if the competition exists. 
+		if (competition != null) { // First we check if the competition exists.
 			TableColumn<Team, Integer> column1 = new TableColumn<>("Team Number");
 			column1.setCellValueFactory(new PropertyValueFactory<>("teamNumber"));
 			TableColumn<Team, String> column2 = new TableColumn<>("Team Name");
-			column2.setCellValueFactory(new PropertyValueFactory<>("teamName"));								// Creating the table columns.
+			column2.setCellValueFactory(new PropertyValueFactory<>("teamName")); // Creating the table columns.
 			TableColumn<Team, String> column3 = new TableColumn<>("Rank");
 			column3.setCellValueFactory(new PropertyValueFactory<>("rank"));
-			column3.setCellFactory(TextFieldTableCell.forTableColumn());						
+			column3.setCellFactory(TextFieldTableCell.forTableColumn());
 			column3.setOnEditCommit((CellEditEvent<Team, String> rank) -> {
-				
-				if(!rank.getNewValue().isBlank() && !rank.getNewValue().matches("[a-zA-Z]+"))						// Checking if the entered rank is not empty and it is not alphabetic characters.
-					((Team) rank.getTableView().getItems().get(rank.getTablePosition().getRow())).setRank(rank.getNewValue());	// If true, replace the old ranke by the new one. 
-				else{
+
+				if (!rank.getNewValue().isBlank() && !rank.getNewValue().matches("[a-zA-Z]+")) // Checking if the
+																								// entered rank is not
+																								// empty and it is not
+																								// alphabetic
+																								// characters.
+					((Team) rank.getTableView().getItems().get(rank.getTablePosition().getRow()))
+							.setRank(rank.getNewValue()); // If true, replace the old ranke by the new one.
+				else {
 					Alert errorAlert = new Alert(AlertType.ERROR);
-					errorAlert.setHeaderText("Invalid input");									// Otherwise, make an error alert that the input is not valid.
+					errorAlert.setHeaderText("Invalid input"); // Otherwise, make an error alert that the input is not
+																// valid.
 					errorAlert.setContentText("Rank should be numbers or (-) if the competition is not over due.");
 					errorAlert.show();
 				}
 			});
-			column3.setEditable(true);													// Making the rank column editable.
+			column3.setEditable(true); // Making the rank column editable.
 			column1.setPrefWidth(200);
 			column2.setPrefWidth(200);
 			column3.setPrefWidth(200);
@@ -612,13 +836,13 @@ public class competitionsTracker extends Application {
 
 			Label label = new Label("Teams");
 			label.setFont(new Font("Arial", 20));
-			
+
 			HBox hb = new HBox();
 			hb.setSpacing(5);
 			hb.getChildren().addAll(showMembers, prepareEmail);
 			// Create topBorder and set all necessary things.
 			BorderPane topBorder = new BorderPane();
-			
+
 			topBorder.setPadding(new Insets(10, 10, 10, 10));
 			topBorder.setLeft(label);
 			topBorder.setRight(hb);
@@ -630,7 +854,8 @@ public class competitionsTracker extends Application {
 			borderPane.setTop(topBorder);
 			BorderPane.setMargin(tableView, new Insets(0, 10, 0, 10));
 
-			// Set an action to "Add" Button, and do all necessary things to add a team to the competition.
+			// Set an action to "Add" Button, and do all necessary things to add a team to
+			// the competition.
 			addButton.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
 				public void handle(ActionEvent e) {
@@ -641,12 +866,13 @@ public class competitionsTracker extends Application {
 					// if text fields are not empty
 					if (!addName.getText().isBlank()) {
 						// if name is a string and rank is not a string
-						if(addName.getText().matches("[a-zA-Z]+") || (addName.getText().contains(" ") && !addName.getText().matches(".*[0-9].*"))) {
+						if (addName.getText().matches("[a-zA-Z]+")
+								|| (addName.getText().contains(" ") && !addName.getText().matches(".*[0-9].*"))) {
 							try {
 								Team team = new Team(addName.getText(), tableView.getItems().size() + 1);
 								team.setRank("-");
 								((CompetitionTB) competition).addTeam(team);
-								
+
 								tableView.getItems().add(((CompetitionTB) competition).getTeams()
 										.get(((CompetitionTB) competition).getTeams().size() - 1));
 							} catch (NumberFormatException er) {
@@ -666,11 +892,11 @@ public class competitionsTracker extends Application {
 						errorAlert.setContentText("Fill all information!");
 						errorAlert.showAndWait();
 					}
-					//addTeamNumber.clear();
+					// addTeamNumber.clear();
 					addName.clear();
 				}
 			});
-			
+
 			// Set an action when any row has been Clicked.
 			tableView.setOnMouseClicked((MouseEvent ev) -> {
 				// To get the selectedStudent from table View.
@@ -680,7 +906,7 @@ public class competitionsTracker extends Application {
 				prepareEmail.setOnAction(e -> {
 					CompetitionManger Manger = new CompetitionManger(competition);
 					try {
-						if(selectedTeam != null)
+						if (selectedTeam != null)
 							Manger.prepareEmail(selectedTeam);
 						else
 							throw new Exception();
@@ -691,10 +917,10 @@ public class competitionsTracker extends Application {
 						errorAlert.showAndWait();
 					}
 				});// End of prepareEmail.setOnAction
-				// set an action to showMembers.
+					// set an action to showMembers.
 				showMembers.setOnAction(e -> {
 					try {
-						if(selectedTeam != null)
+						if (selectedTeam != null)
 							showTeamMembers(e, competition, selectedTeam);
 						else
 							throw new Exception();
@@ -705,10 +931,8 @@ public class competitionsTracker extends Application {
 						errorAlert.showAndWait();
 					}
 				});
-				
+
 			}); // End of tableView.setOnMouseClicked
-			
-			
 
 			// Create a scene and set it on thisStage to display.
 			Scene scene = new Scene(borderPane, 810, 450);
@@ -719,9 +943,9 @@ public class competitionsTracker extends Application {
 		}
 
 	}// End of showTeams Method.
-	
-	public void showTeamMembers(ActionEvent event,Competition competition, Team team) {
-		
+
+	public void showTeamMembers(ActionEvent event, Competition competition, Team team) {
+
 		TableColumn<Student, Integer> column1 = new TableColumn<>("ID");
 		column1.setCellValueFactory(new PropertyValueFactory<>("id"));
 		TableColumn<Student, String> column2 = new TableColumn<>("Name");
@@ -787,7 +1011,8 @@ public class competitionsTracker extends Application {
 				// if text fields are not empty
 				if (!addId.getText().isBlank() && !addName.getText().isBlank() && !addMajor.getText().isBlank()) {
 					// if name is a string
-					if (addName.getText().matches("[a-zA-Z]+") || (addName.getText().contains(" ") && !addName.getText().matches(".*[0-9].*"))) {
+					if (addName.getText().matches("[a-zA-Z]+")
+							|| (addName.getText().contains(" ") && !addName.getText().matches(".*[0-9].*"))) {
 						try {
 							Student student = new Student(Integer.parseInt(addId.getText()), addMajor.getText(),
 									addName.getText());
@@ -855,28 +1080,27 @@ public class competitionsTracker extends Application {
 		Stage thisStage = (Stage) node.getScene().getWindow();
 		thisStage.setScene(scene);
 		thisStage.show();
-	    
+
 	}// End of showTeamMembers Method.
-	
+
 	public void showNotification() {
 		String ContentText = "";
 		CompetitionManger competitionManger;
-		for(int i = 0 ; i< competitions.size();++i) {
-			
+		for (int i = 0; i < competitions.size(); ++i) {
+
 			competitionManger = new CompetitionManger(competitions.get(i));
-			if(competitions.get(i).getStatus().equals("Off") && !competitionManger.isUpdated())
-				ContentText += "\n"+competitions.get(i).getName();
-		
+			if (competitions.get(i).getStatus().equals("Off") && !competitionManger.isUpdated())
+				ContentText += "\n" + competitions.get(i).getName();
+
 		}
-		if(!ContentText.isEmpty()) {
+		if (!ContentText.isEmpty()) {
 			Alert alertWarning = new Alert(AlertType.WARNING);
-	        alertWarning.setTitle("Warning Alert");
-	        alertWarning.setHeaderText("Update The Winners");
-	        alertWarning.setContentText("Update these competitions:"+ ContentText);
-	        alertWarning.showAndWait();
+			alertWarning.setTitle("Warning Alert");
+			alertWarning.setHeaderText("Update The Winners");
+			alertWarning.setContentText("Update these competitions:" + ContentText);
+			alertWarning.showAndWait();
 		}
-		
+
 	}
-	
-//-------------------------------------------------------------------------------------------	
-} // End of competitionsTracker Class
+
+}
