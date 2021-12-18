@@ -24,15 +24,17 @@ public class Team {
 	public ArrayList<Student> getMembers() {
 		return members;
 	}
-	
+
 	public String getTeamName() {
 
 		return teamName;
 	}
+
 	public int getTeamNumber() {
 
 		return teamNumber;
 	}
+
 	public String getRank() {
 
 		return rank;
