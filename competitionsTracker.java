@@ -5,9 +5,18 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
+import java.util.Locale;
 
+import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFCreationHelper;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -72,7 +81,6 @@ public class CompetitionsTracker extends Application {
 	public void start(Stage arg0) throws Exception {
 
 		read();
-
 		Scene scene = showCompetitions();
 
 		back.setPrefSize(90, 20);
@@ -121,11 +129,15 @@ public class CompetitionsTracker extends Application {
 			c2.setCellValue(competitions.get(i).getLink());
 
 			row = ws.createRow(2);
+			XSSFCreationHelper createHelper = wb.getCreationHelper();
+			XSSFCellStyle cellStyle = wb.createCellStyle();
+			cellStyle.setDataFormat(createHelper.createDataFormat().getFormat("dd/MMM/yy"));
 			c1 = row.createCell(0);
 			c2 = row.createCell(1);
 			c1.setCellValue("Competition Date");
-			c2.setCellValue(competitions.get(i).getDate().toString());
-
+			LocalDate date = competitions.get(i).getDate();
+			c2.setCellValue(date);
+			c2.setCellStyle(cellStyle);
 			if (competitions.get(i) instanceof CompetitionSolo) {
 
 				CompetitionSolo comp = (CompetitionSolo) competitions.get(i);
@@ -167,7 +179,7 @@ public class CompetitionsTracker extends Application {
 
 			else if (competitions.get(i) instanceof CompetitionTB) {
 				CompetitionTB comp = (CompetitionTB) competitions.get(i);
-				String[] headers = { "Team Number", "Team Name", "Student ID", "Student Name", "Major", "Rank" };
+				String[] headers = { "Student ID", "Student Name", "Major", "team", "Team Name", "Rank" };
 
 				// getting the teams
 				ArrayList<Team> teams = comp.getTeams();
@@ -182,14 +194,11 @@ public class CompetitionsTracker extends Application {
 				}
 
 				// total number of rows
-				int k = 0;
-				for (Team team : teams)
-					k += team.getMembers().size();
 
 				// filling the data, each student in a row
+				int k = 0;
 				for (Team team : teams) {
 					ArrayList<Student> students = team.getMembers();
-
 					for (Student student : students) {
 
 						row = ws.createRow(k + 5);
@@ -203,12 +212,12 @@ public class CompetitionsTracker extends Application {
 						c7 = row.createCell(6);
 
 						c1.setCellValue(k + 1);
-						c2.setCellValue(team.getTeamNumber());
-						c3.setCellValue(team.getTeamName());
-						c4.setCellValue(student.getId());
-						c5.setCellValue(student.getName());
-						c6.setCellValue(student.getMajor());
-						c7.setCellValue(student.getRank());
+						c2.setCellValue(student.getId());
+						c3.setCellValue(student.getName());
+						c4.setCellValue(student.getMajor());
+						c5.setCellValue(team.getTeamNumber());
+						c6.setCellValue(team.getTeamName());
+						c7.setCellValue(team.getRank());
 
 						k++;
 					}
@@ -231,95 +240,114 @@ public class CompetitionsTracker extends Application {
 
 		// for each sheet
 		for (int i = 0; i < wb.getNumberOfSheets(); i++) {
+
 			XSSFSheet sheet = wb.getSheetAt(i);
 
-			// get the general info of the competition
-			String compName = sheet.getRow(0).getCell(1).getStringCellValue();
-			String compLink = sheet.getRow(1).getCell(1).getStringCellValue();
+			if (sheet.getRow(0) != null) {
+				// get the general info of the competition
+				String compName = sheet.getRow(0).getCell(1).getStringCellValue();
+				String compLink = sheet.getRow(1).getCell(1).getStringCellValue();
 
-			String[] date = sheet.getRow(2).getCell(1).getStringCellValue().split("-");
-			int year = Integer.parseInt(date[0]);
-			int month = Integer.parseInt(date[1]);
-			int day = Integer.parseInt(date[2]);
+				DataFormatter dataFormatter = new DataFormatter();
+				String date = dataFormatter.formatCellValue(sheet.getRow(2).getCell(1));
 
-			// header to determine if the competition is Solo or Team based
-			String header = sheet.getRow(4).getCell(1).getStringCellValue();
-
-			// if the competition is Solo
-			if (header.equals("Student ID")) {
-
-				CompetitionSolo comp = new CompetitionSolo(compLink, compName);
-				comp.setDate(year, month, day);
-
-				// iterate over each row
-				int j = 5;
-				XSSFRow row = sheet.getRow(j);
-
-				while (row == null)
-					row = sheet.getRow(++j);
-
-				while (row != null) {
-
-					// getting the information of the student
-					int id = (int) row.getCell(1).getNumericCellValue();
-					String name = row.getCell(2).getStringCellValue();
-					String major = row.getCell(3).getStringCellValue();
-					String rank = row.getCell(4).getStringCellValue();
-
-					// add the student
-					Student student = new Student(id, major, name);
-					student.setRank(rank);
-					comp.addStudent(student);
-
-					// next row
-					row = sheet.getRow(++j);
+				int day = 0, year = 0;
+				String month = "";
+				if (date.charAt(1) == '-') {
+					day = Integer.parseInt(date.charAt(0) + "");
+					month = date.substring(2, 5);
+					year = Integer.parseInt("20" + date.substring(6, date.length()));
+				} else {
+					day = Integer.parseInt(date.substring(0, 2));
+					month = date.substring(3, 6);
+					year = Integer.parseInt("20" + date.substring(7, date.length()));
 				}
-				addCompetition(comp);
-			}
+				DateTimeFormatter parser = DateTimeFormatter.ofPattern("MMM").withLocale(Locale.ENGLISH);
+				TemporalAccessor accessor = parser.parse(month);
+				int monthd = accessor.get(ChronoField.MONTH_OF_YEAR);
 
-			// if the competition is Team based
-			else {
-				CompetitionTB comp = new CompetitionTB(compLink, compName);
-				comp.setDate(year, month, day);
+				// header to determine if the competition is Solo or Team based
+				String header = sheet.getRow(4).getCell(4).getStringCellValue();
 
-				// iterate over each row
-				int j = 5;
-				XSSFRow row = sheet.getRow(j);
+				// if the competition is Solo
+				if (header.equals("Rank")) {
 
-				while (row == null)
-					row = sheet.getRow(++j);
+					CompetitionSolo comp = new CompetitionSolo(compLink, compName);
+					comp.setDate(year, monthd, day);
 
-				while (row != null) {
-					int teamNumber = (int) row.getCell(1).getNumericCellValue();
-					String teamName = row.getCell(2).getStringCellValue();
-					Team team = new Team(teamName, teamNumber);
+					// iterate over each row
+					int j = 5;
 
-					int k = teamNumber;
-					while (k == teamNumber && row != null) {
+					XSSFRow row = sheet.getRow(j);
+
+					while (row != null) {
 
 						// getting the information of the student
-						int id = (int) row.getCell(3).getNumericCellValue();
-						String name = row.getCell(4).getStringCellValue();
-						String major = row.getCell(5).getStringCellValue();
-						String rank = row.getCell(6).getStringCellValue();
+						int id = Integer.parseInt(row.getCell(1).getStringCellValue());
+						String name = row.getCell(2).getStringCellValue();
+						String major = row.getCell(3).getStringCellValue();
+						String rank = row.getCell(4).getStringCellValue();
 
 						// add the student
 						Student student = new Student(id, major, name);
 						student.setRank(rank);
-						team.addStudent(student);
+						comp.addStudent(student);
 
 						// next row
-						row = sheet.getRow(++j);
-
-						// next k
-						if (row != null)
-							k = (int) row.getCell(1).getNumericCellValue();
+						j++;
+						row = sheet.getRow(j);
 					}
-					comp.addTeam(team);
+					addCompetition(comp);
 				}
-				addCompetition(comp);
-			}
+
+				// if the competition is Team based
+				else {
+					CompetitionTB comp = new CompetitionTB(compLink, compName);
+					comp.setDate(year, monthd, day);
+
+					// iterate over each row
+					int j = 5;
+					XSSFRow row = sheet.getRow(j);
+
+					while (row != null) {
+						int teamNumber = (int) row.getCell(4).getNumericCellValue();
+						String teamName = row.getCell(5).getStringCellValue();
+						Team team = new Team(teamName, teamNumber);
+
+						int k = teamNumber;
+						while (k == teamNumber && row != null) {
+
+							// getting the information of the student
+							int id = Integer.parseInt(row.getCell(1).getStringCellValue());
+							String name = row.getCell(2).getStringCellValue();
+							String major = row.getCell(3).getStringCellValue();
+							String rank = "";
+							if (row.getCell(6).getCellType() == CellType.STRING)
+								rank = row.getCell(6).getStringCellValue();
+							else
+								rank = row.getCell(4).getNumericCellValue() + "";
+
+							// add the student
+							Student student = new Student(id, major, name);
+							student.setRank(rank);
+							team.addStudent(student);
+
+							// next row
+							row = sheet.getRow(++j);
+
+							// next k
+							if (row != null)
+								k = (int) row.getCell(4).getNumericCellValue();
+						}
+						comp.addTeam(team);
+					}
+					addCompetition(comp);
+				}
+			} else
+				break;
+
 		}
+
 	}
 
 	@Override
