@@ -53,7 +53,7 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
-public class CompetitionsTracker extends Application {
+public class competitionsTracker extends Application {
 
 	private static ArrayList<Competition> competitions = new ArrayList<Competition>();
 	static TableView<Competition> tableViewC;
@@ -283,10 +283,21 @@ public class CompetitionsTracker extends Application {
 					while (row != null) {
 
 						// getting the information of the student
-						int id = Integer.parseInt(row.getCell(1).getStringCellValue());
+						int id;
+						if (row.getCell(1).getCellType() == CellType.STRING)
+							id = Integer.parseInt(row.getCell(1).getStringCellValue());
+						else
+							id = (int) row.getCell(1).getNumericCellValue();
+						
 						String name = row.getCell(2).getStringCellValue();
 						String major = row.getCell(3).getStringCellValue();
-						String rank = row.getCell(4).getStringCellValue();
+						String rank = "";
+						
+						
+						if (row.getCell(4).getCellType() == CellType.STRING)
+							rank = row.getCell(4).getStringCellValue();
+						else
+							rank = row.getCell(4).getNumericCellValue() + "";
 
 						// add the student
 						Student student = new Student(id, major, name);
@@ -318,14 +329,20 @@ public class CompetitionsTracker extends Application {
 						while (k == teamNumber && row != null) {
 
 							// getting the information of the student
-							int id = Integer.parseInt(row.getCell(1).getStringCellValue());
+							int id;
+							if (row.getCell(1).getCellType() == CellType.STRING)
+								id = Integer.parseInt(row.getCell(1).getStringCellValue());
+							else
+								id = (int) row.getCell(1).getNumericCellValue();
+							
 							String name = row.getCell(2).getStringCellValue();
 							String major = row.getCell(3).getStringCellValue();
 							String rank = "";
+							
 							if (row.getCell(6).getCellType() == CellType.STRING)
 								rank = row.getCell(6).getStringCellValue();
 							else
-								rank = row.getCell(4).getNumericCellValue() + "";
+								rank = row.getCell(6).getNumericCellValue() + "";
 
 							// add the student
 							Student student = new Student(id, major, name);
